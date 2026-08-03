@@ -1,0 +1,40 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace TaskInventoryApi.Models;
+
+public enum TaskItemStatus
+{
+    ToDo,
+    InProgress,
+    Done
+}
+
+public class TaskItem
+{
+    public int Id { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    public string? Description { get; set; }
+
+    public TaskItemStatus Status { get; set; } = TaskItemStatus.ToDo;
+
+    public int AssignedUserId { get; set; }
+    public User? AssignedUser { get; set; }
+
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? CompletedAt { get; set; }
+
+    public double ExpectedDurationHours { get; set; }
+
+    public bool IsAnomalous { get; set; } = false;
+
+    // Navigation property
+    public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
+}
