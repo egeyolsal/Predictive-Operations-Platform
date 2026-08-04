@@ -71,6 +71,15 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+if (args.Contains("seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await DataSeeder.SeedAsync(context);
+    Console.WriteLine("✅ Seeding complete. Exiting.");
+    return;
+}
+
 // the exception handling middleware to the pipeline
 app.UseMiddleware<TaskInventoryApi.Middleware.ExceptionHandlingMiddleware>();
 
