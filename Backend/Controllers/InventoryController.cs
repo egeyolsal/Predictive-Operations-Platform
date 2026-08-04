@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskInventoryApi.Dtos;
 using TaskInventoryApi.Models;
@@ -5,6 +6,7 @@ using TaskInventoryApi.Repositories;
 
 namespace TaskInventoryApi.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class InventoryController : ControllerBase
