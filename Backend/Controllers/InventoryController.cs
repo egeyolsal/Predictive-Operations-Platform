@@ -89,6 +89,7 @@ public class InventoryController : ControllerBase
         Name = item.Name,
         Category = item.Category,
         CurrentStock = item.CurrentStock,
-        CriticalThreshold = item.CriticalThreshold
+        CriticalThreshold = item.CriticalThreshold,
+        IsBelowCriticalThreshold = item.CurrentStock < item.CriticalThreshold
     };
 }

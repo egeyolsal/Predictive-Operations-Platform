@@ -43,4 +43,5 @@ public class InventoryResponseDto
     public string Category { get; set; } = string.Empty;
     public int CurrentStock { get; set; }
     public int CriticalThreshold { get; set; }
+    public bool IsBelowCriticalThreshold { get; set; }
 }
