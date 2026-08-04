@@ -38,6 +38,14 @@ public class TaskController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TaskResponseDto>> Create(TaskCreateDto dto)
     {
+        var categoryExists = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
+        if (categoryExists == null)
+            return BadRequest($"Category with id {dto.CategoryId} does not exist.");
+
+        var userExists = await _unitOfWork.Users.GetByIdAsync(dto.AssignedUserId);
+        if (userExists == null)
+            return BadRequest($"User with id {dto.AssignedUserId} does not exist.");
+
         var task = new TaskItem
         {
             Title = dto.Title,
@@ -61,6 +69,14 @@ public class TaskController : ControllerBase
         var existingTask = await _unitOfWork.TaskItems.GetByIdAsync(id);
         if (existingTask == null)
             return NotFound();
+
+        var categoryExists = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
+        if (categoryExists == null)
+            return BadRequest($"Category with id {dto.CategoryId} does not exist.");
+
+        var userExists = await _unitOfWork.Users.GetByIdAsync(dto.AssignedUserId);
+        if (userExists == null)
+            return BadRequest($"User with id {dto.AssignedUserId} does not exist.");
 
         existingTask.Title = dto.Title;
         existingTask.Description = dto.Description;

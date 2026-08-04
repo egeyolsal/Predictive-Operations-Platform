@@ -9,7 +9,7 @@ namespace TaskInventoryApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
-{
+{   
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
 

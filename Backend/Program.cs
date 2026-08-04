@@ -71,6 +71,9 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// the exception handling middleware to the pipeline
+app.UseMiddleware<TaskInventoryApi.Middleware.ExceptionHandlingMiddleware>();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
