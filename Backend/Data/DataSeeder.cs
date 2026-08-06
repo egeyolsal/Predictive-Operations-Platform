@@ -5,142 +5,149 @@ namespace TaskInventoryApi.Data;
 
 public static class DataSeeder
 {
-    // Sabit seed: her çalıştırmada aynı rastgele veriyi üretir, sonuçlar tekrarlanabilir olur.
     private static readonly Random _random = new(42);
-
     private const string SeedMarker = "Seed data ile otomatik oluşturuldu.";
 
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        var categories = await SeedCategoriesAsync(context);
-        var users = await SeedUsersAsync(context);
-        var inventoryItems = await SeedInventoryItemsAsync(context);
-        var tasks = await SeedTasksAsync(context, categories, users);
-        await SeedInventoryTransactionsAsync(context, tasks, inventoryItems);
+        await context.Database.EnsureCreatedAsync();
 
-        Console.WriteLine("Seed data created successfully.");
-    }
-
-    private static async Task<List<Category>> SeedCategoriesAsync(ApplicationDbContext context)
-    {
-        var categoryNames = new[] { "Bakım", "Üretim", "Lojistik", "Kalite Kontrol" };
-        var existingNames = await context.Categories.Select(c => c.Name).ToListAsync();
-
-        foreach (var name in categoryNames)
+        if (await context.Users.AnyAsync())
         {
-            if (!existingNames.Contains(name))
-                context.Categories.Add(new Category { Name = name });
+            Console.WriteLine("DB already contains data, skipping seed.");
+            return;
         }
 
-        await context.SaveChangesAsync();
-        return await context.Categories.ToListAsync();
+        var users = await SeedUsersAsync(context);
+        var categories = await SeedCategoriesAsync(context);
+        var suppliers = await SeedSuppliersAsync(context);
+        var customers = await SeedCustomersAsync(context);
+        var inventoryItems = await SeedInventoryItemsAsync(context, suppliers);
+        var tasks = await SeedTasksAsync(context, categories, users);
+        await SeedInventoryTransactionsAsync(context, tasks, inventoryItems);
+        await SeedInvoicesAsync(context, inventoryItems, customers);
+
+        Console.WriteLine("✅ Advanced Seed data created successfully.");
     }
 
     private static async Task<List<User>> SeedUsersAsync(ApplicationDbContext context)
     {
-        var existingUsernames = await context.Users.Select(u => u.Username).ToListAsync();
-        var workerNames = new[] { "worker1", "worker2", "worker3", "worker4", "worker5" };
-
-        foreach (var username in workerNames)
-        {
-            if (!existingUsernames.Contains(username))
-            {
-                context.Users.Add(new User
-                {
-                    Username = username,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Worker123!"),
-                    Role = UserRole.Worker
-                });
-            }
-        }
-
+        var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin123!");
+        var workerPassword = BCrypt.Net.BCrypt.HashPassword("Worker123!");
+        
+        var admin = new User { Username = "admin_user", Email = "admin@worksight.com", PasswordHash = adminPassword, Role = UserRole.Admin };
+        var worker1 = new User { Username = "ahmet_y", Email = "ahmet@worksight.com", PasswordHash = workerPassword, Role = UserRole.Worker };
+        var worker2 = new User { Username = "mehmet_d", Email = "mehmet@worksight.com", PasswordHash = workerPassword, Role = UserRole.Worker };
+        var analyst = new User { Username = "ayse_a", Email = "ayse@worksight.com", PasswordHash = workerPassword, Role = UserRole.Analyst };
+        
+        await context.Users.AddRangeAsync(admin, worker1, worker2, analyst);
         await context.SaveChangesAsync();
-        return await context.Users.Where(u => u.Role == UserRole.Worker).ToListAsync();
+
+        return new List<User> { worker1, worker2 };
     }
 
-    private static async Task<List<InventoryItem>> SeedInventoryItemsAsync(ApplicationDbContext context)
+    private static async Task<List<Category>> SeedCategoriesAsync(ApplicationDbContext context)
     {
-        var itemsToSeed = new (string Name, string Category, int Stock, int Threshold)[]
+        var cats = new List<Category>
         {
-            ("Hidrolik Yağ", "Bakım", 200, 30),
-            ("Endüstriyel Vida Seti", "Bakım", 500, 50),
-            ("Kaynak Teli", "Üretim", 300, 40),
-            ("Filtre Seti", "Bakım", 150, 20),
-            ("Ambalaj Kartonu", "Lojistik", 1000, 100)
+            new Category { Name = "Mekanik Bakım" },
+            new Category { Name = "Elektrik Bakım" },
+            new Category { Name = "Sarf Malzeme Değişimi" }
         };
-
-        var existingNames = await context.InventoryItems.Select(i => i.Name).ToListAsync();
-
-        foreach (var item in itemsToSeed)
-        {
-            if (!existingNames.Contains(item.Name))
-            {
-                context.InventoryItems.Add(new InventoryItem
-                {
-                    Name = item.Name,
-                    Category = item.Category,
-                    CurrentStock = item.Stock,
-                    CriticalThreshold = item.Threshold
-                });
-            }
-        }
-
+        await context.Categories.AddRangeAsync(cats);
         await context.SaveChangesAsync();
-        return await context.InventoryItems.ToListAsync();
+        return cats;
+    }
+
+    private static async Task<List<Supplier>> SeedSuppliersAsync(ApplicationDbContext context)
+    {
+        var sups = new List<Supplier>
+        {
+            new Supplier { Name = "Demirhan Hırdavat", ContactName = "Ali Demir", Phone = "05551112233", Email = "ali@demirhan.com" },
+            new Supplier { Name = "Volt Elektronik A.Ş.", ContactName = "Ayşe Yılmaz", Phone = "05554445566", Email = "ayse@volt.com" },
+            new Supplier { Name = "Grup Endüstriyel", ContactName = "Hasan Kaya", Phone = "05557778899", Email = "hasan@grupend.com" }
+        };
+        await context.Suppliers.AddRangeAsync(sups);
+        await context.SaveChangesAsync();
+        return sups;
+    }
+
+    private static async Task<List<Customer>> SeedCustomersAsync(ApplicationDbContext context)
+    {
+        var custs = new List<Customer>
+        {
+            new Customer { Name = "Mega İnşaat Projesi", Email = "info@megainsaat.com", Phone = "02120000001", Address = "Şantiye 1" },
+            new Customer { Name = "Oto-Parça Fabrikası", Email = "bakim@otofabrika.com", Phone = "02120000002", Address = "Fabrika Ana Bina" }
+        };
+        await context.Customers.AddRangeAsync(custs);
+        await context.SaveChangesAsync();
+        return custs;
+    }
+
+    private static async Task<List<InventoryItem>> SeedInventoryItemsAsync(ApplicationDbContext context, List<Supplier> suppliers)
+    {
+        var items = new List<InventoryItem>
+        {
+            new InventoryItem { Name = "Endüstriyel Rulman (SKF)", Category = "Mekanik", Barcode = "B001", CurrentStock = 120, CriticalThreshold = 20 },
+            new InventoryItem { Name = "10mm Çelik Cıvata", Category = "Sarf", Barcode = "B002", CurrentStock = 1500, CriticalThreshold = 200 },
+            new InventoryItem { Name = "3x2.5 NYM Kablo (100m)", Category = "Elektrik", Barcode = "B003", CurrentStock = 40, CriticalThreshold = 10 },
+            new InventoryItem { Name = "Motor Yağı 5W-30 (Varil)", Category = "Sarf", Barcode = "B004", CurrentStock = 15, CriticalThreshold = 4 },
+            new InventoryItem { Name = "30mA Kaçak Akım Rölesi", Category = "Elektrik", Barcode = "B005", CurrentStock = 30, CriticalThreshold = 5 },
+        };
+        await context.InventoryItems.AddRangeAsync(items);
+        await context.SaveChangesAsync();
+
+        // Tedarikçi-Ürün fiyat eşleştirmeleri (ItemSuppliers)
+        var itemSuppliers = new List<ItemSupplier>
+        {
+            new ItemSupplier { InventoryItemId = items[0].Id, SupplierId = suppliers[0].Id, Price = 150.0m },
+            new ItemSupplier { InventoryItemId = items[0].Id, SupplierId = suppliers[2].Id, Price = 145.0m }, // Daha ucuz
+            new ItemSupplier { InventoryItemId = items[1].Id, SupplierId = suppliers[0].Id, Price = 5.0m },
+            new ItemSupplier { InventoryItemId = items[2].Id, SupplierId = suppliers[1].Id, Price = 1200.0m },
+            new ItemSupplier { InventoryItemId = items[3].Id, SupplierId = suppliers[2].Id, Price = 2500.0m },
+            new ItemSupplier { InventoryItemId = items[4].Id, SupplierId = suppliers[1].Id, Price = 450.0m },
+        };
+        await context.ItemSuppliers.AddRangeAsync(itemSuppliers);
+        await context.SaveChangesAsync();
+
+        return items;
     }
 
     private static async Task<List<TaskItem>> SeedTasksAsync(
-        ApplicationDbContext context, List<Category> categories, List<User> users)
+        ApplicationDbContext context, List<Category> categories, List<User> workers)
     {
-        const int tasksPerCategory = 9; // 4 kategori x 9 = 36 görev
-
-        var existingSeeded = await context.TaskItems
-            .Where(t => t.Description == SeedMarker)
-            .ToListAsync();
-
-        if (existingSeeded.Count >= tasksPerCategory * categories.Count)
-        {
-            Console.WriteLine("Tasks already seeded, skipping.");
-            return existingSeeded;
-        }
-
+        const int tasksPerCategory = 5;
         var tasks = new List<TaskItem>();
 
         foreach (var category in categories)
         {
-            // Her kategorinin kendine özgü bir ortalama süresi var (2-6 saat arası)
-            var baseDuration = 2.0 + _random.NextDouble() * 4.0;
+            var baseDuration = 2.0 + _random.NextDouble() * 3.0;
 
             for (int i = 0; i < tasksPerCategory; i++)
             {
-                // Her kategorideki son görevi bilerek aykırı değer yapıyoruz
-                bool isDeliberateOutlier = i == tasksPerCategory - 1;
+                bool isAnomalous = (i == tasksPerCategory - 1); // Son görevler anormal
+                double actualDuration = isAnomalous ? baseDuration * 4.0 : baseDuration;
 
-                double actualDuration = isDeliberateOutlier
-                    ? baseDuration * 3.5 // ortalamanın çok üzerinde - anomali tespitini tetiklemek için
-                    : Math.Max(0.5, NextGaussian(baseDuration, baseDuration * 0.2));
-
-                var createdAt = DateTime.UtcNow.AddDays(-_random.Next(5, 45));
+                var createdAt = DateTime.UtcNow.AddDays(-_random.Next(5, 30));
                 var completedAt = createdAt.AddHours(actualDuration);
 
                 var task = new TaskItem
                 {
-                    Title = $"{category.Name} görevi #{i + 1}",
-                    Description = SeedMarker,
+                    Title = $"{category.Name} Operasyonu #{i + 1} {(isAnomalous ? "(Zorlu)" : "")}",
+                    Description = SeedMarker + (isAnomalous ? " Ciddi sorunlar yaşandı." : ""),
                     Status = TaskItemStatus.Done,
-                    AssignedUserId = users[_random.Next(users.Count)].Id,
+                    AssignedUserId = workers[_random.Next(workers.Count)].Id,
                     CategoryId = category.Id,
                     CreatedAt = createdAt,
                     CompletedAt = completedAt,
                     ExpectedDurationHours = Math.Round(baseDuration, 1),
-                    IsAnomalous = false // Gün 13'teki algoritma dolduracak, şimdiden işaretlemiyoruz
+                    IsAnomalous = isAnomalous
                 };
 
                 tasks.Add(task);
-                context.TaskItems.Add(task);
             }
         }
-
+        await context.TaskItems.AddRangeAsync(tasks);
         await context.SaveChangesAsync();
         return tasks;
     }
@@ -148,37 +155,58 @@ public static class DataSeeder
     private static async Task SeedInventoryTransactionsAsync(
         ApplicationDbContext context, List<TaskItem> tasks, List<InventoryItem> items)
     {
-        const int transactionCount = 60;
-
-        if (await context.InventoryTransactions.CountAsync() >= transactionCount)
+        foreach (var task in tasks)
         {
-            Console.WriteLine("Inventory transactions already seeded, skipping.");
-            return;
-        }
-
-        for (int i = 0; i < transactionCount; i++)
-        {
-            var item = items[_random.Next(items.Count)];
-            var task = tasks[_random.Next(tasks.Count)];
-
-            context.InventoryTransactions.Add(new InventoryTransaction
+            // Her task için 1-2 farklı malzeme kullanalım
+            int numItems = _random.Next(1, 3);
+            for(int j = 0; j < numItems; j++)
             {
-                InventoryItemId = item.Id,
-                TaskItemId = task.Id,
-                QuantityUsed = _random.Next(1, 10),
-                TransactionDate = DateTime.UtcNow.AddDays(-_random.Next(0, 20)) // son 20 gün içinde dağıtılmış
-            });
-        }
+                var item = items[_random.Next(items.Count)];
+                // Anormal görev ise malzeme kullanımını da çok abartalım
+                int qty = task.IsAnomalous ? _random.Next(20, 50) : _random.Next(1, 5);
 
+                context.InventoryTransactions.Add(new InventoryTransaction
+                {
+                    InventoryItemId = item.Id,
+                    TaskItemId = task.Id,
+                    QuantityUsed = qty,
+                    TransactionDate = task.CompletedAt ?? DateTime.UtcNow
+                });
+                
+                item.CurrentStock = Math.Max(0, item.CurrentStock - qty); // Negatif stoka düşmesini engelle
+            }
+        }
         await context.SaveChangesAsync();
     }
 
-    // Box-Muller dönüşümü: normal (gauss) dağılıma yakın rastgele sayı üretir
-    private static double NextGaussian(double mean, double stdDev)
+    private static async Task SeedInvoicesAsync(ApplicationDbContext context, List<InventoryItem> items, List<Customer> customers)
     {
-        double u1 = 1.0 - _random.NextDouble();
-        double u2 = 1.0 - _random.NextDouble();
-        double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
-        return mean + stdDev * randStdNormal;
+        var invoice = new Invoice
+        {
+            InvoiceNumber = "IN-2026-0001",
+            InvoiceDate = DateTime.UtcNow.AddDays(-5),
+            Type = InvoiceType.Inbound,
+            CustomerId = null, // Alım
+            LineItems = new List<InvoiceLineItem>
+            {
+                new InvoiceLineItem { InventoryItemId = items[0].Id, Quantity = 50, UnitPrice = 145.0m },
+                new InvoiceLineItem { InventoryItemId = items[1].Id, Quantity = 500, UnitPrice = 4.5m }
+            }
+        };
+
+        var invoice2 = new Invoice
+        {
+            InvoiceNumber = "OUT-2026-0001",
+            InvoiceDate = DateTime.UtcNow.AddDays(-2),
+            Type = InvoiceType.Outbound,
+            CustomerId = customers[0].Id, // Satış
+            LineItems = new List<InvoiceLineItem>
+            {
+                new InvoiceLineItem { InventoryItemId = items[0].Id, Quantity = 10, UnitPrice = 200.0m }
+            }
+        };
+
+        await context.Invoices.AddRangeAsync(invoice, invoice2);
+        await context.SaveChangesAsync();
     }
 }
