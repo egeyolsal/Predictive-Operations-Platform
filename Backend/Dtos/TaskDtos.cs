@@ -46,7 +46,9 @@ public class TaskResponseDto
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; }
     public int AssignedUserId { get; set; }
+    public string? AssignedUserName { get; set; }
     public int CategoryId { get; set; }
+    public string? CategoryName { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public double ExpectedDurationHours { get; set; }

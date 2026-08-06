@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskInventoryApi.Dtos;
@@ -21,14 +22,26 @@ public class TaskController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TaskResponseDto>>> GetAll()
     {
-        var tasks = await _unitOfWork.TaskItems.GetAllAsync();
+        var tasks = await _unitOfWork.TaskItems.GetAllAsync(t => t.AssignedUser, t => t.Category);
+
+        // Rol ve Kullanıcı ID'sini Token'dan al
+        var userRole = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirst("role")?.Value;
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirst("nameid")?.Value ?? User.FindFirst("sub")?.Value;
+
+        // Eğer rol Worker ise sadece kendisine atananları döndür
+        if (userRole == UserRole.Worker.ToString() && int.TryParse(userIdString, out int userId))
+        {
+            tasks = tasks.Where(t => t.AssignedUserId == userId);
+        }
+
         return Ok(tasks.Select(MapToResponseDto));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskResponseDto>> GetById(int id)
     {
-        var task = await _unitOfWork.TaskItems.GetByIdAsync(id);
+        var tasks = await _unitOfWork.TaskItems.FindAsync(t => t.Id == id, t => t.AssignedUser, t => t.Category);
+        var task = tasks.FirstOrDefault();
         if (task == null)
             return NotFound();
 
@@ -207,7 +220,9 @@ public class TaskController : ControllerBase
         Description = task.Description,
         Status = task.Status,
         AssignedUserId = task.AssignedUserId,
+        AssignedUserName = task.AssignedUser?.Username,
         CategoryId = task.CategoryId,
+        CategoryName = task.Category?.Name,
         CreatedAt = task.CreatedAt,
         CompletedAt = task.CompletedAt,
         ExpectedDurationHours = task.ExpectedDurationHours,

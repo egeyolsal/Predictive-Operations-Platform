@@ -33,8 +33,10 @@
     <tr>
       <th pSortableColumn="title">Title <p-sortIcon field="title" /></th>
       <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
-      <th pSortableColumn="assignedUserId">User ID <p-sortIcon field="assignedUserId" /></th>
-      <th pSortableColumn="categoryId">Cat ID <p-sortIcon field="categoryId" /></th>
+      @if (isAdmin()) {
+        <th pSortableColumn="assignedUserId">Assigned User <p-sortIcon field="assignedUserId" /></th>
+      }
+      <th pSortableColumn="categoryId">Category <p-sortIcon field="categoryId" /></th>
       <th pSortableColumn="expectedDurationHours">Expected (h) <p-sortIcon field="expectedDurationHours" /></th>
       <th pSortableColumn="createdAt">Created <p-sortIcon field="createdAt" /></th>
       @if (isAdmin()) {
@@ -52,8 +54,10 @@
           [value]="getStatusLabel(item.status)"
         ></p-tag>
       </td>
-      <td>{{ item.assignedUserId }}</td>
-      <td>{{ item.categoryId }}</td>
+      @if (isAdmin()) {
+        <td>{{ item.assignedUserName || item.assignedUserId }}</td>
+      }
+      <td>{{ item.categoryName || item.categoryId }}</td>
       <td>{{ item.expectedDurationHours }}</td>
       <td>{{ item.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
       @if (isAdmin()) {

@@ -10,7 +10,9 @@ export interface TaskItem {
   description?: string;
   status: TaskItemStatus;
   assignedUserId: number;
+  assignedUserName?: string;
   categoryId: number;
+  categoryName?: string;
   createdAt: string;
   completedAt?: string;
   expectedDurationHours: number;
