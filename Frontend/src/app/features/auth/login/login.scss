@@ -1,0 +1,25 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.field {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
