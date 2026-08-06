@@ -1,0 +1,9 @@
+.table-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+
+  input {
+    max-width: 250px;
+  }
+}
