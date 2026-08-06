@@ -1,5 +1,7 @@
 <h2>Inventory</h2>
 
+<p-toast />
+
 <p-table
   [value]="filteredItems()"
   [loading]="isLoading()"
@@ -8,6 +10,7 @@
 >
   <ng-template pTemplate="caption">
     <div class="table-header">
+      <p-button label="Add New" icon="pi pi-plus" (onClick)="openAddDialog()" />
       <input
         pInputText
         type="text"
@@ -25,6 +28,7 @@
       <th pSortableColumn="currentStock">Current Stock <p-sortIcon field="currentStock" /></th>
       <th pSortableColumn="criticalThreshold">Critical Threshold <p-sortIcon field="criticalThreshold" /></th>
       <th>Status</th>
+      <th>Actions</th>
     </tr>
   </ng-template>
 
@@ -41,12 +45,23 @@
           <p-tag severity="success" value="OK" />
         }
       </td>
+      <td>
+        <p-button icon="pi pi-pencil" severity="secondary" [text]="true" (onClick)="openEditDialog(item)" />
+        <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="onDelete(item)" />
+      </td>
     </tr>
   </ng-template>
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="5">No inventory items found.</td>
+      <td colspan="6">No inventory items found.</td>
     </tr>
   </ng-template>
 </p-table>
+
+<app-inventory-form
+  [visible]="dialogVisible()"
+  [editingItem]="editingItem()"
+  (visibleChange)="onDialogVisibleChange($event)"
+  (saved)="onSaved()"
+/>

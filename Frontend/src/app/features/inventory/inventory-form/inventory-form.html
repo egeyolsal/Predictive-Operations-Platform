@@ -1,0 +1,52 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onHide()"
+  [modal]="true"
+  [style]="{ width: '450px' }"
+  [header]="editingItem() ? 'Edit Inventory Item' : 'Add Inventory Item'"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" pInputText formControlName="name" class="full-width" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <small class="error-text">Name is required (max 100 characters).</small>
+      }
+    </div>
+    
+    <div class="field">
+        <label for="category">Category</label>
+        <p-select
+            id="category"
+            formControlName="category"
+            [options]="categoryOptions"
+            placeholder="Select a category"
+            styleClass="full-width"
+    />
+    @if (form.controls.category.invalid && form.controls.category.touched) {
+        <small class="error-text">Category is required.</small>
+    }
+    </div>
+
+    <div class="field">
+      <label for="currentStock">Current Stock</label>
+      <p-inputNumber id="currentStock" formControlName="currentStock" [min]="0" styleClass="full-width" />
+      @if (form.controls.currentStock.invalid && form.controls.currentStock.touched) {
+        <small class="error-text">Current stock must be 0 or greater.</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="criticalThreshold">Critical Threshold</label>
+      <p-inputNumber id="criticalThreshold" formControlName="criticalThreshold" [min]="0" styleClass="full-width" />
+      @if (form.controls.criticalThreshold.invalid && form.controls.criticalThreshold.touched) {
+        <small class="error-text">Critical threshold must be 0 or greater.</small>
+      }
+    </div>
+
+    <div class="form-actions">
+      <p-button label="Cancel" severity="secondary" type="button" (onClick)="onHide()" />
+      <p-button label="Save" type="submit" [loading]="isSubmitting()" />
+    </div>
+  </form>
+</p-dialog>
