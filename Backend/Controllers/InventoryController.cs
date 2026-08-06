@@ -35,6 +35,18 @@ public class InventoryController : ControllerBase
         return Ok(MapToResponseDto(item));
     }
 
+    [HttpGet("by-barcode/{barcode}")]
+    public async Task<ActionResult<InventoryResponseDto>> GetByBarcode(string barcode)
+    {
+        var items = await _unitOfWork.InventoryItems.FindAsync(i => i.Barcode == barcode);
+        var item = items.FirstOrDefault();
+        
+        if (item == null)
+            return NotFound();
+
+        return Ok(MapToResponseDto(item));
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<InventoryResponseDto>> Create(InventoryCreateDto dto)
@@ -43,6 +55,7 @@ public class InventoryController : ControllerBase
         {
             Name = dto.Name,
             Category = dto.Category,
+            Barcode = dto.Barcode,
             CurrentStock = dto.CurrentStock,
             CriticalThreshold = dto.CriticalThreshold
         };
@@ -63,6 +76,7 @@ public class InventoryController : ControllerBase
 
         existingItem.Name = dto.Name;
         existingItem.Category = dto.Category;
+        existingItem.Barcode = dto.Barcode;
         existingItem.CurrentStock = dto.CurrentStock;
         existingItem.CriticalThreshold = dto.CriticalThreshold;
 
@@ -91,6 +105,7 @@ public class InventoryController : ControllerBase
         Id = item.Id,
         Name = item.Name,
         Category = item.Category,
+        Barcode = item.Barcode,
         CurrentStock = item.CurrentStock,
         CriticalThreshold = item.CriticalThreshold,
         IsBelowCriticalThreshold = item.CurrentStock < item.CriticalThreshold

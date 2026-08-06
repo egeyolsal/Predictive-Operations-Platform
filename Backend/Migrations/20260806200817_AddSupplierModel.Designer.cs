@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskInventoryApi.Data;
 
@@ -10,9 +11,11 @@ using TaskInventoryApi.Data;
 namespace TaskInventoryAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806200817_AddSupplierModel")]
+    partial class AddSupplierModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.29");
@@ -83,7 +86,12 @@ namespace TaskInventoryAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("SupplierId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
 
                     b.ToTable("InventoryItems");
                 });
@@ -171,24 +179,6 @@ namespace TaskInventoryAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("InvoiceLineItems");
-                });
-
-            modelBuilder.Entity("TaskInventoryApi.Models.ItemSupplier", b =>
-                {
-                    b.Property<int>("InventoryItemId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("InventoryItemId", "SupplierId");
-
-                    b.HasIndex("SupplierId");
-
-                    b.ToTable("ItemSuppliers");
                 });
 
             modelBuilder.Entity("TaskInventoryApi.Models.Supplier", b =>
@@ -300,6 +290,16 @@ namespace TaskInventoryAPI.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("TaskInventoryApi.Models.InventoryItem", b =>
+                {
+                    b.HasOne("TaskInventoryApi.Models.Supplier", "Supplier")
+                        .WithMany("InventoryItems")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("TaskInventoryApi.Models.InventoryTransaction", b =>
                 {
                     b.HasOne("TaskInventoryApi.Models.InventoryItem", "InventoryItem")
@@ -348,25 +348,6 @@ namespace TaskInventoryAPI.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("TaskInventoryApi.Models.ItemSupplier", b =>
-                {
-                    b.HasOne("TaskInventoryApi.Models.InventoryItem", "InventoryItem")
-                        .WithMany("ItemSuppliers")
-                        .HasForeignKey("InventoryItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskInventoryApi.Models.Supplier", "Supplier")
-                        .WithMany("ItemSuppliers")
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InventoryItem");
-
-                    b.Navigation("Supplier");
-                });
-
             modelBuilder.Entity("TaskInventoryApi.Models.TaskItem", b =>
                 {
                     b.HasOne("TaskInventoryApi.Models.User", "AssignedUser")
@@ -400,8 +381,6 @@ namespace TaskInventoryAPI.Migrations
                 {
                     b.Navigation("InvoiceLineItems");
 
-                    b.Navigation("ItemSuppliers");
-
                     b.Navigation("Transactions");
                 });
 
@@ -412,7 +391,7 @@ namespace TaskInventoryAPI.Migrations
 
             modelBuilder.Entity("TaskInventoryApi.Models.Supplier", b =>
                 {
-                    b.Navigation("ItemSuppliers");
+                    b.Navigation("InventoryItems");
                 });
 
             modelBuilder.Entity("TaskInventoryApi.Models.TaskItem", b =>

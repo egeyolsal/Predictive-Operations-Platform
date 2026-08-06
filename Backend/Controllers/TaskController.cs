@@ -107,6 +107,99 @@ public class TaskController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("consume-material")]
+    public async Task<IActionResult> ConsumeMaterial(TaskMaterialConsumptionDto dto)
+    {
+        // 1. Validate Task
+        var task = await _unitOfWork.TaskItems.GetByIdAsync(dto.TaskId);
+        if (task == null)
+            return NotFound($"Task with ID {dto.TaskId} not found.");
+
+        // 2. Find Inventory Item by Barcode
+        var inventoryItems = await _unitOfWork.InventoryItems.FindAsync(i => i.Barcode == dto.Barcode);
+        var inventoryItem = inventoryItems.FirstOrDefault();
+        if (inventoryItem == null)
+            return NotFound($"Product with barcode '{dto.Barcode}' not found.");
+
+        // 3. Check Stock
+        if (inventoryItem.CurrentStock < dto.Quantity)
+            return BadRequest($"Insufficient stock for '{inventoryItem.Name}'. Requested: {dto.Quantity}, Available: {inventoryItem.CurrentStock}");
+
+        // 4. Create Internal Consumption Invoice
+        string shortCode = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+        var invoice = new Invoice
+        {
+            InvoiceNumber = $"TASK-{task.Id}-{shortCode}",
+            InvoiceDate = DateTime.UtcNow,
+            Type = InvoiceType.InternalConsumption,
+            TotalAmount = 0 // Usually 0 for internal consumption, or could be cost value
+        };
+
+        var lineItem = new InvoiceLineItem
+        {
+            InventoryItemId = inventoryItem.Id,
+            Quantity = dto.Quantity,
+            UnitPrice = 0 // Cost is handled separately or 0 for now
+        };
+        invoice.LineItems.Add(lineItem);
+        await _unitOfWork.Invoices.AddAsync(invoice);
+
+        // 5. Update Stock & Check Critical Threshold
+        inventoryItem.CurrentStock -= dto.Quantity;
+        _unitOfWork.InventoryItems.Update(inventoryItem);
+
+        if (inventoryItem.CurrentStock < inventoryItem.CriticalThreshold)
+        {
+            // Find an Admin user to assign the task to
+            var adminUsers = await _unitOfWork.Users.FindAsync(u => u.Role == UserRole.Admin);
+            var adminUser = adminUsers.FirstOrDefault();
+            int assignedUserId = adminUser?.Id ?? task.AssignedUserId;
+
+            // Find the optimum supplier (Lowest Price)
+            string supplierInfo = "Optimum tedarikçi bulunamadı (Ürüne atanmış tedarikçi yok).";
+            
+            var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(isup => isup.InventoryItemId == inventoryItem.Id);
+            var optimumItemSupplier = itemSuppliers.OrderBy(isup => isup.Price).FirstOrDefault();
+
+            if (optimumItemSupplier != null)
+            {
+                var supplier = await _unitOfWork.Suppliers.GetByIdAsync(optimumItemSupplier.SupplierId);
+                if (supplier != null)
+                {
+                    supplierInfo = $"Optimum Tedarikçi: {supplier.Name} (Fiyat: {optimumItemSupplier.Price} TL, İletişim: {supplier.ContactName ?? "-"}, Tel: {supplier.Phone ?? "-"})";
+                }
+            }
+
+            var reorderTask = new TaskItem
+            {
+                Title = $"⚠️ ACİL: '{inventoryItem.Name}' için Stok Kritik Seviyede",
+                Description = $"Ürün stoğu {inventoryItem.CurrentStock} adede düşmüştür (Kritik Eşik: {inventoryItem.CriticalThreshold}). Lütfen acilen tedarik/satın alma işlemlerini başlatın.\n\n**{supplierInfo}**",
+                Status = TaskItemStatus.ToDo,
+                AssignedUserId = assignedUserId,
+                CategoryId = task.CategoryId, // Or another category
+                ExpectedDurationHours = 2,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            await _unitOfWork.TaskItems.AddAsync(reorderTask);
+        }
+
+        // 6. Record Inventory Transaction (Optional but good for history)
+        var transaction = new InventoryTransaction
+        {
+            TaskItemId = task.Id,
+            InventoryItemId = inventoryItem.Id,
+            QuantityUsed = dto.Quantity,
+            TransactionDate = DateTime.UtcNow
+        };
+        await _unitOfWork.InventoryTransactions.AddAsync(transaction);
+
+        // 7. Save Transaction
+        await _unitOfWork.SaveChangesAsync();
+
+        return Ok(new { Message = "Material consumed successfully.", InvoiceNumber = invoice.InvoiceNumber });
+    }
+
     private static TaskResponseDto MapToResponseDto(TaskItem task) => new()
     {
         Id = task.Id,

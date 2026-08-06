@@ -11,11 +11,11 @@ import { Auth } from '../../auth/auth';
   styleUrl: './navbar.scss',
 })
 export class Navbar {
-  private readonly authService = inject(Auth);
+  protected readonly auth = inject(Auth);
   private readonly router = inject(Router);
 
   logout(): void {
-    this.authService.logout();
+    this.auth.logout();
     this.router.navigateByUrl('/login');
   }
 }

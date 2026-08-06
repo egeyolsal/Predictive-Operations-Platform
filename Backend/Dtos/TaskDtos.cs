@@ -52,3 +52,17 @@ public class TaskResponseDto
     public double ExpectedDurationHours { get; set; }
     public bool IsAnomalous { get; set; }
 }
+
+public class TaskMaterialConsumptionDto
+{
+    [Required]
+    public int TaskId { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string Barcode { get; set; } = string.Empty;
+
+    [Required]
+    [Range(1, int.MaxValue)]
+    public int Quantity { get; set; } = 1;
+}

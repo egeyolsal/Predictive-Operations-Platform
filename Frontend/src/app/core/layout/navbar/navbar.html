@@ -1,8 +1,20 @@
-<p-toolbar>
-  <div class="p-toolbar-group-start">
-    <span class="app-title">Predictive Operations Platform</span>
+<div class="topbar">
+  <div class="welcome-text">
+    <h2>Welcome back, {{ auth.username() }}</h2>
+    <p>Manage all key aspects of your system easily and efficiently.</p>
   </div>
-  <div class="p-toolbar-group-end">
-    <p-button label="Logout" icon="pi pi-sign-out" severity="secondary" (onClick)="logout()" />
+
+  <div class="user-profile">
+    <div class="avatar">
+      <img src="https://ui-avatars.com/api/?name={{ auth.username() }}&background=e0e7ff&color=3730a3" alt="Avatar">
+    </div>
+    <div class="user-info">
+      <span class="name">{{ auth.username() }}</span>
+      <!-- We don't have email in auth state yet, so we just show Role for now -->
+      <span class="role">{{ auth.role() }}</span>
+    </div>
+    <button class="logout-btn" (click)="logout()" title="Logout">
+      <i class="pi pi-sign-out"></i>
+    </button>
   </div>
-</p-toolbar>
+</div>

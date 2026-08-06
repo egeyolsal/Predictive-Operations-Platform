@@ -15,6 +15,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
     public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<ItemSupplier> ItemSuppliers => Set<ItemSupplier>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,5 +52,45 @@ public class ApplicationDbContext : DbContext
             .WithMany(t => t.InventoryTransactions)
             .HasForeignKey(it => it.TaskItemId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Customer -> Invoices
+        modelBuilder.Entity<Invoice>()
+            .HasOne(i => i.Customer)
+            .WithMany(c => c.Invoices)
+            .HasForeignKey(i => i.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Invoice -> InvoiceLineItems
+        modelBuilder.Entity<InvoiceLineItem>()
+            .HasOne(ili => ili.Invoice)
+            .WithMany(i => i.LineItems)
+            .HasForeignKey(ili => ili.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade); // If an invoice is deleted, its line items should be deleted
+
+        // InventoryItem -> InvoiceLineItems
+        modelBuilder.Entity<InvoiceLineItem>()
+            .HasOne(ili => ili.InventoryItem)
+            .WithMany(ii => ii.InvoiceLineItems)
+            .HasForeignKey(ili => ili.InventoryItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Unique Constraint: Bir faturada aynı üründen sadece 1 satır olabilir
+        modelBuilder.Entity<InvoiceLineItem>()
+            .HasIndex(ili => new { ili.InvoiceId, ili.InventoryItemId })
+            .IsUnique();
+
+        // ItemSupplier (Many-to-Many Composite Key)
+        modelBuilder.Entity<ItemSupplier>()
+            .HasKey(isup => new { isup.InventoryItemId, isup.SupplierId });
+
+        modelBuilder.Entity<ItemSupplier>()
+            .HasOne(isup => isup.InventoryItem)
+            .WithMany(i => i.ItemSuppliers)
+            .HasForeignKey(isup => isup.InventoryItemId);
+
+        modelBuilder.Entity<ItemSupplier>()
+            .HasOne(isup => isup.Supplier)
+            .WithMany(s => s.ItemSuppliers)
+            .HasForeignKey(isup => isup.SupplierId);
     }
 }

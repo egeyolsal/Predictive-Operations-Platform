@@ -1,19 +1,27 @@
 <nav class="sidebar">
-  <ul>
-    <li>
-      <a routerLink="/dashboard" routerLinkActive="active">
-        <i class="pi pi-chart-line"></i> Dashboard
-      </a>
-    </li>
-    <li>
-      <a routerLink="/tasks" routerLinkActive="active">
-        <i class="pi pi-list-check"></i> Tasks
-      </a>
-    </li>
-    <li>
-      <a routerLink="/inventory" routerLinkActive="active">
-        <i class="pi pi-box"></i> Inventory
-      </a>
-    </li>
-  </ul>
+  <div class="logo-container">
+    <div class="logo-icon">WS</div>
+    <span class="logo-text">WorkSight</span>
+  </div>
+
+  <div class="menu-section">
+    <span class="section-title">MAIN MENU</span>
+    <ul>
+      <li>
+        <a routerLink="/dashboard" routerLinkActive="active">
+          <i class="pi pi-desktop"></i> Dashboard
+        </a>
+      </li>
+      <li>
+        <a routerLink="/inventory" routerLinkActive="active">
+          <i class="pi pi-box"></i> Inventory
+        </a>
+      </li>
+      <li>
+        <a routerLink="/tasks" routerLinkActive="active">
+          <i class="pi pi-list-check"></i> Tasks
+        </a>
+      </li>
+    </ul>
+  </div>
 </nav>

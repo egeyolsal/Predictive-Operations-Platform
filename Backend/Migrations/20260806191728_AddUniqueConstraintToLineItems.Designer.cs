@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskInventoryApi.Data;
 
@@ -10,9 +11,11 @@ using TaskInventoryApi.Data;
 namespace TaskInventoryAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806191728_AddUniqueConstraintToLineItems")]
+    partial class AddUniqueConstraintToLineItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.29");
@@ -173,52 +176,6 @@ namespace TaskInventoryAPI.Migrations
                     b.ToTable("InvoiceLineItems");
                 });
 
-            modelBuilder.Entity("TaskInventoryApi.Models.ItemSupplier", b =>
-                {
-                    b.Property<int>("InventoryItemId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("InventoryItemId", "SupplierId");
-
-                    b.HasIndex("SupplierId");
-
-                    b.ToTable("ItemSuppliers");
-                });
-
-            modelBuilder.Entity("TaskInventoryApi.Models.Supplier", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ContactName")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Suppliers");
-                });
-
             modelBuilder.Entity("TaskInventoryApi.Models.TaskItem", b =>
                 {
                     b.Property<int>("Id")
@@ -348,25 +305,6 @@ namespace TaskInventoryAPI.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("TaskInventoryApi.Models.ItemSupplier", b =>
-                {
-                    b.HasOne("TaskInventoryApi.Models.InventoryItem", "InventoryItem")
-                        .WithMany("ItemSuppliers")
-                        .HasForeignKey("InventoryItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskInventoryApi.Models.Supplier", "Supplier")
-                        .WithMany("ItemSuppliers")
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InventoryItem");
-
-                    b.Navigation("Supplier");
-                });
-
             modelBuilder.Entity("TaskInventoryApi.Models.TaskItem", b =>
                 {
                     b.HasOne("TaskInventoryApi.Models.User", "AssignedUser")
@@ -400,19 +338,12 @@ namespace TaskInventoryAPI.Migrations
                 {
                     b.Navigation("InvoiceLineItems");
 
-                    b.Navigation("ItemSuppliers");
-
                     b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("TaskInventoryApi.Models.Invoice", b =>
                 {
                     b.Navigation("LineItems");
-                });
-
-            modelBuilder.Entity("TaskInventoryApi.Models.Supplier", b =>
-                {
-                    b.Navigation("ItemSuppliers");
                 });
 
             modelBuilder.Entity("TaskInventoryApi.Models.TaskItem", b =>
