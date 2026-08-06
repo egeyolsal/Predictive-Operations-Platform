@@ -1,0 +1,10 @@
+:host ::ng-deep .p-toolbar {
+  border-radius: 0;
+  padding: 0.75rem 1.5rem;
+}
+
+.app-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
