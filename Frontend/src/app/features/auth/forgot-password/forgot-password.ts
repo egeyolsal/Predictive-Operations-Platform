@@ -1,28 +1,25 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Auth } from '../../../core/auth/auth';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-forgot-password',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './login.html',
-  styleUrl: './login.scss'
+  templateUrl: './forgot-password.html',
+  styleUrl: './forgot-password.scss'
 })
-export class Login {
+export class ForgotPassword {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(Auth);
-  private readonly router = inject(Router);
 
   readonly errorMessage = signal<string | null>(null);
+  readonly successMessage = signal<string | null>(null);
   readonly isSubmitting = signal(false);
-  showPassword = false;
 
   readonly form = this.fb.nonNullable.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required],
-    rememberMe: [false]
+    email: ['', [Validators.required, Validators.email]]
   });
 
   onSubmit(): void {
@@ -32,16 +29,18 @@ export class Login {
     }
 
     this.errorMessage.set(null);
+    this.successMessage.set(null);
     this.isSubmitting.set(true);
 
-    this.authService.login(this.form.getRawValue()).subscribe({
-      next: () => {
+    this.authService.forgotPassword({ email: this.form.getRawValue().email }).subscribe({
+      next: (res) => {
         this.isSubmitting.set(false);
-        this.router.navigateByUrl('/dashboard');
+        this.successMessage.set(res.message);
+        this.form.reset();
       },
       error: () => {
         this.isSubmitting.set(false);
-        this.errorMessage.set('Invalid username or password. Please try again.');
+        this.errorMessage.set('An error occurred. Please try again.');
       }
     });
   }

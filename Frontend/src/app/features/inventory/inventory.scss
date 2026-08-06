@@ -1,8 +1,13 @@
-.table-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.table-header {
+  display: flex;
+  justify-content: flex-end;
 
   input {
     max-width: 250px;

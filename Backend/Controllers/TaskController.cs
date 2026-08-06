@@ -35,6 +35,7 @@ public class TaskController : ControllerBase
         return Ok(MapToResponseDto(task));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<TaskResponseDto>> Create(TaskCreateDto dto)
     {
@@ -63,6 +64,7 @@ public class TaskController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, MapToResponseDto(task));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, TaskUpdateDto dto)
     {
@@ -91,6 +93,7 @@ public class TaskController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

@@ -1,8 +1,12 @@
-<app-navbar></app-navbar>
+@if (auth.isAuthenticated()) {
+  <app-navbar></app-navbar>
 
-<div class="layout-container">
-  <app-sidebar></app-sidebar>
-  <main class="content">
-    <router-outlet></router-outlet>
-  </main>
-</div>
+  <div class="layout-container">
+    <app-sidebar></app-sidebar>
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}

@@ -8,6 +8,7 @@ import { MessageService } from 'primeng/api';
 import { InventoryApi } from './inventory-api';
 import { InventoryItem } from './inventory.models';
 import { InventoryForm } from './inventory-form/inventory-form';
+import { Auth } from '../../core/auth/auth';
 
 @Component({
   selector: 'app-inventory',
@@ -19,6 +20,9 @@ import { InventoryForm } from './inventory-form/inventory-form';
 export class Inventory implements OnInit {
   private readonly inventoryApi = inject(InventoryApi);
   private readonly messageService = inject(MessageService);
+  private readonly auth = inject(Auth);
+
+  readonly isAdmin = computed(() => this.auth.role() === 'Admin');
 
   readonly items = signal<InventoryItem[]>([]);
   readonly isLoading = signal(true);

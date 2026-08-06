@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace TaskInventoryApi.Models;
 
@@ -18,9 +19,17 @@ public class User
     public string Username { get; set; } = string.Empty;
 
     [Required]
+    [EmailAddress]
+    [MaxLength(100)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
     public string PasswordHash { get; set; } = string.Empty;
 
     public UserRole Role { get; set; } = UserRole.Worker;
+
+    public string? PasswordResetToken { get; set; }
+    public DateTime? ResetTokenExpires { get; set; }
 
     // Navigation property
     public ICollection<TaskItem> AssignedTasks { get; set; } = new List<TaskItem>();

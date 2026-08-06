@@ -35,6 +35,7 @@ public class InventoryController : ControllerBase
         return Ok(MapToResponseDto(item));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<InventoryResponseDto>> Create(InventoryCreateDto dto)
     {
@@ -52,6 +53,7 @@ public class InventoryController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = item.Id }, MapToResponseDto(item));
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, InventoryUpdateDto dto)
     {
@@ -70,6 +72,7 @@ public class InventoryController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

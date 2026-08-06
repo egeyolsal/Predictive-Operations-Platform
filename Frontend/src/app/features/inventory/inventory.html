@@ -1,4 +1,9 @@
-<h2>Inventory</h2>
+<div class="page-header">
+  <h2>Inventory</h2>
+  @if (isAdmin()) {
+    <p-button label="Add Inventory" icon="pi pi-plus" (onClick)="openAddDialog()" />
+  }
+</div>
 
 <p-toast />
 
@@ -10,7 +15,6 @@
 >
   <ng-template pTemplate="caption">
     <div class="table-header">
-      <p-button label="Add New" icon="pi pi-plus" (onClick)="openAddDialog()" />
       <input
         pInputText
         type="text"
@@ -28,7 +32,9 @@
       <th pSortableColumn="currentStock">Current Stock <p-sortIcon field="currentStock" /></th>
       <th pSortableColumn="criticalThreshold">Critical Threshold <p-sortIcon field="criticalThreshold" /></th>
       <th>Status</th>
-      <th>Actions</th>
+      @if (isAdmin()) {
+        <th>Actions</th>
+      }
     </tr>
   </ng-template>
 
@@ -45,10 +51,12 @@
           <p-tag severity="success" value="OK" />
         }
       </td>
-      <td>
-        <p-button icon="pi pi-pencil" severity="secondary" [text]="true" (onClick)="openEditDialog(item)" />
-        <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="onDelete(item)" />
-      </td>
+      @if (isAdmin()) {
+        <td>
+          <p-button icon="pi pi-pencil" severity="secondary" [text]="true" (onClick)="openEditDialog(item)" />
+          <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="onDelete(item)" />
+        </td>
+      }
     </tr>
   </ng-template>
 

@@ -12,23 +12,26 @@ public class AuthController : ControllerBase
 {   
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
 
-    public AuthController(IUnitOfWork unitOfWork, ITokenService tokenService)
+    public AuthController(IUnitOfWork unitOfWork, ITokenService tokenService, IEmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
+        _emailService = emailService;
     }
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
     {
-        var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Username == dto.Username);
+        var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Username == dto.Username || u.Email == dto.Email);
         if (existingUsers.Any())
-            return BadRequest("This username is already taken.");
+            return BadRequest("This username or email is already taken.");
 
         var user = new User
         {
             Username = dto.Username,
+            Email = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Role = UserRole.Worker // güvenlik: kendi kendine Admin rolü seçemez
         };
@@ -42,6 +45,7 @@ public class AuthController : ControllerBase
         {
             Token = token,
             Username = user.Username,
+            Email = user.Email,
             Role = user.Role.ToString()
         });
     }
@@ -49,7 +53,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
     {
-        var users = await _unitOfWork.Users.FindAsync(u => u.Username == dto.Username);
+        var users = await _unitOfWork.Users.FindAsync(u => u.Username == dto.Username || u.Email == dto.Username);
         var user = users.FirstOrDefault();
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
@@ -61,7 +65,51 @@ public class AuthController : ControllerBase
         {
             Token = token,
             Username = user.Username,
+            Email = user.Email,
             Role = user.Role.ToString()
         });
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+    {
+        var users = await _unitOfWork.Users.FindAsync(u => u.Email == dto.Email);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+        {
+            // Don't reveal that the user does not exist
+            return Ok(new { message = "If the email is valid, a reset link has been sent." });
+        }
+
+        var resetToken = Guid.NewGuid().ToString();
+        user.PasswordResetToken = resetToken;
+        user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendPasswordResetEmailAsync(user.Username, resetToken);
+
+        return Ok(new { message = "If the email is valid, a reset link has been sent." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+    {
+        var users = await _unitOfWork.Users.FindAsync(u => u.PasswordResetToken == dto.Token && u.ResetTokenExpires > DateTime.UtcNow);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+            return BadRequest("Invalid or expired reset token.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.PasswordResetToken = null;
+        user.ResetTokenExpires = null;
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Ok(new { message = "Password reset successfully." });
     }
 }

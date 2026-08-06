@@ -1,0 +1,99 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onHide()"
+  [modal]="true"
+  [header]="editingItem() ? 'Edit Task' : 'Add Task'"
+  [style]="{ width: '400px' }"
+  [closable]="true"
+  [closeOnEscape]="true"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-layout">
+    <div class="field">
+      <label for="title">Title *</label>
+      <input id="title" type="text" pInputText formControlName="title" />
+      @if (form.controls.title.invalid && form.controls.title.touched) {
+        <small class="p-error">Title is required (max 200 chars).</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" pTextarea formControlName="description" rows="3"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="status">Status *</label>
+      <p-select
+        id="status"
+        [options]="statusOptions"
+        formControlName="status"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+      ></p-select>
+      @if (form.controls.status.invalid && form.controls.status.touched) {
+        <small class="p-error">Status is required.</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="assignedUserId">Assigned User *</label>
+      <p-select
+        id="assignedUserId"
+        [options]="users()"
+        formControlName="assignedUserId"
+        optionLabel="username"
+        optionValue="id"
+        appendTo="body"
+        placeholder="Select a User"
+      ></p-select>
+      @if (form.controls.assignedUserId.invalid && form.controls.assignedUserId.touched) {
+        <small class="p-error">User selection is required.</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="categoryId">Category *</label>
+      <p-select
+        id="categoryId"
+        [options]="categories()"
+        formControlName="categoryId"
+        optionLabel="name"
+        optionValue="id"
+        appendTo="body"
+        placeholder="Select a Category"
+      ></p-select>
+      @if (form.controls.categoryId.invalid && form.controls.categoryId.touched) {
+        <small class="p-error">Category selection is required.</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="expectedDurationHours">Expected Duration (Hours) *</label>
+      <p-inputNumber
+        id="expectedDurationHours"
+        formControlName="expectedDurationHours"
+        [minFractionDigits]="1"
+        [maxFractionDigits]="1"
+        [min]="0.1"
+      ></p-inputNumber>
+      @if (form.controls.expectedDurationHours.invalid && form.controls.expectedDurationHours.touched) {
+        <small class="p-error">Expected duration is required (>0).</small>
+      }
+    </div>
+
+    <div class="actions">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        (click)="onHide()"
+      ></p-button>
+      <p-button
+        type="submit"
+        label="Save"
+        [loading]="isSubmitting()"
+      ></p-button>
+    </div>
+  </form>
+</p-dialog>

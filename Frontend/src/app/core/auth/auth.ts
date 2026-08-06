@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest } from './auth.models';
+import { AuthResponse, LoginRequest, RegisterRequest, ForgotPasswordRequest, ResetPasswordRequest } from './auth.models';
 import { API_BASE_URL } from '../config/api-config';
 
 const TOKEN_KEY = 'auth_token';
@@ -26,6 +26,14 @@ export class Auth {
     return this.http
       .post<AuthResponse>(`${API_BASE_URL}/auth/register`, credentials)
       .pipe(tap(response => this.setSession(response)));
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${API_BASE_URL}/auth/forgot-password`, request);
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${API_BASE_URL}/auth/reset-password`, request);
   }
 
   logout(): void {
