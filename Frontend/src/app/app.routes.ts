@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth-guard';
 import { adminGuard } from './core/auth/admin-guard';
+import { LayoutComponent } from './core/layout/layout';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -21,33 +22,38 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword)
   },
   {
-    path: 'dashboard',
+    path: '',
+    component: LayoutComponent,
     canActivate: [authGuard],
-    loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard)
-  },
-  {
-    path: 'tasks',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/tasks/tasks').then(m => m.Tasks)
-  },
-  {
-    path: 'inventory',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/inventory/inventory').then(m => m.Inventory)
-  },
-  {
-    path: 'suppliers',
-    canActivate: [authGuard, adminGuard],
-    loadComponent: () => import('./features/suppliers/suppliers').then(m => m.SuppliersComponent)
-  },
-  {
-    path: 'customers',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/customers/customers').then(m => m.CustomersComponent)
-  },
-  {
-    path: 'invoices',
-    canActivate: [authGuard, adminGuard],
-    loadComponent: () => import('./features/invoices/invoices').then(m => m.InvoicesComponent)
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard)
+      },
+      {
+        path: 'tasks',
+        loadComponent: () => import('./features/tasks/tasks').then(m => m.Tasks)
+      },
+      {
+        path: 'inventory',
+        loadComponent: () => import('./features/inventory/inventory').then(m => m.Inventory)
+      },
+      {
+        path: 'suppliers',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/suppliers/suppliers').then(m => m.SuppliersComponent)
+      },
+      {
+        path: 'customers',
+        loadComponent: () => import('./features/customers/customers').then(m => m.CustomersComponent)
+      },
+      { path: 'profile', loadComponent: () => import('./features/profile/profile').then(m => m.ProfileComponent) },
+      { path: 'settings', loadComponent: () => import('./features/settings/settings').then(m => m.SettingsComponent) },
+      {
+        path: 'invoices',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/invoices/invoices').then(m => m.InvoicesComponent)
+      }
+    ]
   }
 ];

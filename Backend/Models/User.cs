@@ -23,6 +23,10 @@ public class User
     [MaxLength(100)]
     public string Email { get; set; } = string.Empty;
 
+    [Phone]
+    [MaxLength(20)]
+    public string? PhoneNumber { get; set; }
+
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
 

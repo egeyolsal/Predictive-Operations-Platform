@@ -209,6 +209,50 @@ public class InvoiceController : ControllerBase
         return Ok(MapToResponseDto(invoice, customer, inventoryItemsDict));
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{id}/cancel")]
+    public async Task<ActionResult> CancelInvoice(int id)
+    {
+        var invoice = await _unitOfWork.Invoices.GetByIdAsync(id);
+        if (invoice == null)
+            return NotFound($"Invoice with ID {id} not found.");
+
+        if (invoice.IsCancelled)
+            return BadRequest("Invoice is already cancelled.");
+
+        // Fetch line items
+        var allLineItems = await _unitOfWork.InvoiceLineItems.GetAllAsync();
+        var lineItems = allLineItems.Where(li => li.InvoiceId == id).ToList();
+
+        // Reverse the stock changes
+        foreach (var lineItem in lineItems)
+        {
+            var inventoryItem = await _unitOfWork.InventoryItems.GetByIdAsync(lineItem.InventoryItemId);
+            if (inventoryItem != null)
+            {
+                if (invoice.Type == InvoiceType.Inbound)
+                {
+                    // Inbound added stock, so we subtract
+                    inventoryItem.CurrentStock -= lineItem.Quantity;
+                    // Prevent negative stock just in case
+                    if (inventoryItem.CurrentStock < 0) inventoryItem.CurrentStock = 0;
+                }
+                else // Outbound or InternalConsumption
+                {
+                    // Outbound subtracted stock, so we add it back
+                    inventoryItem.CurrentStock += lineItem.Quantity;
+                }
+                _unitOfWork.InventoryItems.Update(inventoryItem);
+            }
+        }
+
+        invoice.IsCancelled = true;
+        _unitOfWork.Invoices.Update(invoice);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Ok(new { message = "Invoice successfully cancelled and stock reverted." });
+    }
+
     private static InvoiceResponseDto MapToResponseDto(Invoice invoice, Customer? customer, Dictionary<int, InventoryItem> inventoryItems)
     {
         return new InvoiceResponseDto
@@ -220,6 +264,7 @@ public class InvoiceController : ControllerBase
             CustomerId = invoice.CustomerId,
             CustomerName = customer?.Name,
             TotalAmount = invoice.TotalAmount,
+            IsCancelled = invoice.IsCancelled,
             LineItems = invoice.LineItems.Select(li => new InvoiceLineItemResponseDto
             {
                 Id = li.Id,

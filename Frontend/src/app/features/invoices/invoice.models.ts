@@ -21,6 +21,7 @@ export interface InvoiceResponseDto {
   customerId?: number;
   customerName?: string;
   totalAmount: number;
+  isCancelled: boolean;
   lineItems: InvoiceLineItemResponseDto[];
 }
 

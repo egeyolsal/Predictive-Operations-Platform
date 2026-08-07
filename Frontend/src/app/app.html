@@ -1,16 +1,3 @@
-@if (auth.isAuthenticated()) {
-  <div class="layout-container">
-    <app-sidebar></app-sidebar>
-    <div class="main-wrapper">
-      <app-navbar></app-navbar>
-      <main class="content">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
-  </div>
-} @else {
-  <router-outlet></router-outlet>
-}
-
+<router-outlet></router-outlet>
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>

@@ -1,20 +1,35 @@
 <div class="topbar">
-  <div class="welcome-text">
-    <h2>Welcome back, {{ auth.username() }}</h2>
-    <p>Manage all key aspects of your system easily and efficiently.</p>
+  <div class="welcome-section">
+    @if (isDashboard()) {
+      <h2>Welcome back, <span class="text-primary">{{ auth.username() }}</span></h2>
+      <p>Here is what's happening in your workspace today.</p>
+    } @else {
+      <h2>{{ pageTitle() }}</h2>
+      <p>Manage your <span class="text-primary font-semibold">{{ pageTitle().toLowerCase() }}</span> data efficiently.</p>
+    }
   </div>
 
-  <div class="user-profile">
-    <div class="avatar">
-      <img src="https://ui-avatars.com/api/?name={{ auth.username() }}&background=e0e7ff&color=3730a3" alt="Avatar">
-    </div>
-    <div class="user-info">
-      <span class="name">{{ auth.username() }}</span>
-      <!-- We don't have email in auth state yet, so we just show Role for now -->
-      <span class="role">{{ auth.role() }}</span>
-    </div>
-    <button class="logout-btn" (click)="logout()" title="Logout">
-      <i class="pi pi-sign-out"></i>
+  <div class="topbar-actions">
+    <!-- Notification Bell -->
+    <button class="notification-btn" title="Notifications">
+      <i class="pi pi-bell" pBadge value="3" severity="danger"></i>
     </button>
+
+    <!-- User Profile Dropdown -->
+    <div class="user-profile">
+      <div class="user-info">
+        <span class="name">{{ auth.username() }}</span>
+        <span class="role">{{ auth.role() }}</span>
+      </div>
+      <div class="avatar-container" (click)="menu.toggle($event)">
+        <p-avatar 
+          [label]="auth.username() ? auth.username()![0].toUpperCase() : 'U'"
+          size="large" 
+          shape="circle"
+          styleClass="custom-avatar">
+        </p-avatar>
+      </div>
+      <p-menu #menu [model]="menuItems" [popup]="true" styleClass="modern-dropdown"></p-menu>
+    </div>
   </div>
 </div>

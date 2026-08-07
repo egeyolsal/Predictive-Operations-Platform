@@ -1,0 +1,56 @@
+<div class="settings-page p-4">
+  <div class="mb-5 text-center">
+    <h1 class="m-0 text-4xl font-bold text-900 tracking-tight">Security Settings</h1>
+    <p class="text-600 mt-2 text-lg">Manage your passwords and application preferences.</p>
+  </div>
+
+  <div class="flex justify-content-center">
+    <div class="col-12 md:col-8 lg:col-5 p-0">
+      <p-card styleClass="shadow-4 border-round-2xl">
+        <ng-template pTemplate="title">
+          <div class="text-2xl font-semibold text-800 mb-2">Change Password</div>
+          <p-divider></p-divider>
+        </ng-template>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="onSavePassword()" class="flex flex-column gap-4 mt-2">
+          
+          <div class="field mb-0">
+            <label for="currentPassword" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Current Password *</label>
+            <p-password id="currentPassword" formControlName="currentPassword" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
+            @if (passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched) {
+              <small class="p-error block mt-2 font-medium">Current password is required.</small>
+            }
+          </div>
+
+          <div class="field mb-0">
+            <label for="newPassword" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">New Password *</label>
+            <p-password id="newPassword" formControlName="newPassword" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%'}">
+              <ng-template pTemplate="footer">
+                <div class="p-3 surface-50 border-round-xl mt-2">
+                  <p class="mt-0 mb-2 font-semibold text-700">Requirements:</p>
+                  <ul class="pl-3 m-0 text-600 line-height-3">
+                    <li>Minimum 8 characters</li>
+                    <li>At least 1 uppercase letter</li>
+                    <li>At least 1 numeric character</li>
+                  </ul>
+                </div>
+              </ng-template>
+            </p-password>
+            @if (passwordForm.get('newPassword')?.hasError('pattern') && passwordForm.get('newPassword')?.touched) {
+              <small class="p-error block mt-2 font-medium">Password does not meet complexity requirements.</small>
+            }
+          </div>
+
+          <div class="field mb-0">
+            <label for="confirmPassword" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Confirm New Password *</label>
+            <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
+          </div>
+
+          <div class="mt-4">
+            <p-button type="submit" label="Update Password" icon="pi pi-shield" severity="warn" styleClass="w-full" [loading]="isSavingPassword()"></p-button>
+          </div>
+        </form>
+      </p-card>
+    </div>
+  </div>
+</div>

@@ -22,4 +22,8 @@ export class InvoiceService {
   create(dto: InvoiceCreateDto): Observable<InvoiceResponseDto> {
     return this.http.post<InvoiceResponseDto>(this.baseUrl, dto);
   }
+
+  cancelInvoice(id: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/${id}/cancel`, {});
+  }
 }

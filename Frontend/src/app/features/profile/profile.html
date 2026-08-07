@@ -1,0 +1,53 @@
+<div class="profile-page p-4">
+  <div class="mb-5 text-center">
+    <h1 class="m-0 text-4xl font-bold text-900 tracking-tight">User Profile</h1>
+    <p class="text-600 mt-2 text-lg">Manage your account details and personal information.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-content-center p-5">
+      <i class="pi pi-spin pi-spinner text-primary" style="font-size: 2.5rem"></i>
+    </div>
+  } @else {
+    <div class="flex justify-content-center">
+      <div class="col-12 md:col-8 lg:col-5 p-0">
+        <p-card styleClass="shadow-4 border-round-2xl">
+          <ng-template pTemplate="title">
+            <div class="text-2xl font-semibold text-800 mb-2">Personal Information</div>
+            <p-divider></p-divider>
+          </ng-template>
+
+          <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-column gap-4 mt-2">
+            
+            <div class="field mb-0">
+              <label for="username" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Username</label>
+              <input id="username" pInputText formControlName="username" class="w-full" />
+            </div>
+
+            <div class="field mb-0">
+              <label for="role" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Role</label>
+              <input id="role" pInputText formControlName="role" class="w-full" />
+            </div>
+
+            <div class="field mb-0">
+              <label for="email" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Email *</label>
+              <input id="email" pInputText formControlName="email" type="email" class="w-full" />
+              @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+                <small class="p-error block mt-2 font-medium">A valid email is required.</small>
+              }
+            </div>
+
+            <div class="field mb-0">
+              <label for="phoneNumber" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Phone Number</label>
+              <input id="phoneNumber" pInputText formControlName="phoneNumber" class="w-full" placeholder="+1 234 567 8900" />
+            </div>
+
+            <div class="mt-4">
+              <p-button type="submit" label="Save Changes" icon="pi pi-check" styleClass="w-full" [loading]="isSavingProfile()"></p-button>
+            </div>
+          </form>
+        </p-card>
+      </div>
+    </div>
+  }
+</div>

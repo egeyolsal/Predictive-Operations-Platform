@@ -55,6 +55,7 @@ public class InvoiceResponseDto
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
     public decimal TotalAmount { get; set; }
+    public bool IsCancelled { get; set; }
     
     public List<InvoiceLineItemResponseDto> LineItems { get; set; } = new();
 }

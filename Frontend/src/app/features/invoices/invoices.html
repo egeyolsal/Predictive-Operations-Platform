@@ -25,6 +25,9 @@
                 <th>Type</th>
                 <th>Customer / Supplier</th>
                 <th>Total Amount</th>
+                @if (auth.role() === 'Admin') {
+                  <th style="width: 100px; text-align: center;">Actions</th>
+                }
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-inv>
@@ -35,12 +38,28 @@
                   <span class="p-badge" 
                         [class.p-badge-success]="inv.type === 'Inbound'"
                         [class.p-badge-info]="inv.type === 'Outbound'"
-                        [class.p-badge-warning]="inv.type === 'InternalConsumption'">
+                        [class.p-badge-warning]="inv.type === 'InternalConsumption'"
+                        [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">
                     {{ inv.type }}
                   </span>
+                  @if (inv.isCancelled) {
+                    <span class="p-badge p-badge-danger ml-2">Cancelled</span>
+                  }
                 </td>
-                <td>{{ inv.customerName || '-' }}</td>
-                <td>{{ inv.totalAmount | currency }}</td>
+                <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">{{ inv.customerName || '-' }}</td>
+                <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">{{ inv.totalAmount | currency }}</td>
+                @if (auth.role() === 'Admin') {
+                  <td style="text-align: center;">
+                    <p-button icon="pi pi-times" 
+                              severity="danger" 
+                              [text]="true" 
+                              [rounded]="true" 
+                              title="Cancel Invoice"
+                              [disabled]="inv.isCancelled"
+                              (onClick)="confirmCancel(inv)">
+                    </p-button>
+                  </td>
+                }
               </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">

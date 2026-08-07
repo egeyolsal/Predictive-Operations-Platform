@@ -3,85 +3,149 @@
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  padding: 24px 32px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  margin: 32px 32px 0 32px;
-  border: none;
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin: 24px 32px 0 32px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 
-  .welcome-text {
+  .welcome-section {
     h2 {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       color: #1e293b;
       margin: 0 0 4px 0;
       letter-spacing: -0.5px;
+      
+      .text-primary {
+        color: #4f46e5; /* Indigo */
+      }
     }
 
     p {
-      font-size: 14px;
+      font-size: 13px;
       color: #64748b;
       margin: 0;
     }
   }
 
-  .user-profile {
+  .topbar-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 24px;
 
-    .avatar {
-      width: 40px;
-      height: 40px;
+
+
+    .notification-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      position: relative;
+      padding: 8px;
       border-radius: 50%;
-      overflow: hidden;
+      transition: all 0.2s ease;
 
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .user-info {
-      display: flex;
-      flex-direction: column;
-
-      .name {
-        font-size: 14px;
-        font-weight: 600;
+      &:hover {
+        background: #f1f5f9;
         color: #1e293b;
       }
 
-      .role {
-        font-size: 12px;
-        color: #64748b;
+      i {
+        font-size: 1.2rem;
       }
     }
 
-    .logout-btn {
-      background: none;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      width: 36px;
-      height: 36px;
+    .user-profile {
       display: flex;
       align-items: center;
-      justify-content: center;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-left: 8px;
+      gap: 12px;
+      padding-left: 24px;
+      border-left: 1px solid #e2e8f0;
 
-      &:hover {
-        background: #f8fafc;
-        color: #ef4444;
-        border-color: #fca5a5;
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+
+        .name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .role {
+          font-size: 12px;
+          color: #94a3b8;
+          font-weight: 500;
+        }
       }
 
-      i {
-        font-size: 16px;
+      .avatar-container {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        
+        ::ng-deep .custom-avatar {
+          background-color: #4f46e5 !important;
+          color: #ffffff !important;
+          font-weight: 600;
+          box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        &:hover {
+          transform: scale(1.05);
+        }
       }
     }
+  }
+}
+
+/* PrimeNG Menu Override (Appended to body) */
+::ng-deep .modern-dropdown {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1) !important;
+  padding: 8px !important;
+  min-width: 200px;
+  margin-top: 8px;
+
+  .p-menuitem {
+    margin-bottom: 2px;
+    
+    .p-menuitem-link {
+      padding: 10px 16px !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
+      
+      .p-menuitem-icon {
+        color: #64748b !important;
+        font-size: 1.1rem;
+        margin-right: 12px !important;
+        transition: color 0.2s ease;
+      }
+
+      .p-menuitem-text {
+        color: #1e293b !important;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+
+      &:hover {
+        background: #f8fafc !important;
+        
+        .p-menuitem-icon {
+          color: #4f46e5 !important;
+        }
+        .p-menuitem-text {
+          color: #4f46e5 !important;
+        }
+      }
+    }
+  }
+
+  .p-menu-separator {
+    margin: 6px 0 !important;
+    border-top: 1px solid #f1f5f9 !important;
   }
 }

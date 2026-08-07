@@ -8,7 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DatePickerModule } from 'primeng/datepicker';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { InvoiceService } from './invoice.service';
 import { InvoiceResponseDto, InvoiceType } from './invoice.models';
@@ -16,6 +16,7 @@ import { InventoryApi } from '../inventory/inventory-api';
 import { InventoryItem } from '../inventory/inventory.models';
 import { CustomerService } from '../../core/services/customer.service';
 import { Customer } from '../../core/models/customer.model';
+import { Auth } from '../../core/auth/auth';
 
 @Component({
   selector: 'app-invoices',
@@ -34,6 +35,8 @@ export class InvoicesComponent implements OnInit {
   private readonly inventoryApi = inject(InventoryApi);
   private readonly customerService = inject(CustomerService);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  readonly auth = inject(Auth);
 
   readonly invoices = signal<InvoiceResponseDto[]>([]);
   readonly inventoryItems = signal<InventoryItem[]>([]);
@@ -148,6 +151,26 @@ export class InvoicesComponent implements OnInit {
         this.isSubmitting.set(false);
         console.error(err);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error || 'Failed to create invoice' });
+      }
+    });
+  }
+
+  confirmCancel(invoice: InvoiceResponseDto): void {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to cancel invoice #${invoice.invoiceNumber}? This will revert all stock movements.`,
+      header: 'Cancel Invoice',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.invoiceService.cancelInvoice(invoice.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Cancelled', detail: 'Invoice has been cancelled successfully.' });
+            this.loadData();
+          },
+          error: (err) => {
+            console.error(err);
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to cancel invoice.' });
+          }
+        });
       }
     });
   }

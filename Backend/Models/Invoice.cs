@@ -20,6 +20,8 @@ public class Invoice
 
     public decimal TotalAmount { get; set; }
 
+    public bool IsCancelled { get; set; } = false;
+
     // Navigation property
     public ICollection<InvoiceLineItem> LineItems { get; set; } = new List<InvoiceLineItem>();
 }
