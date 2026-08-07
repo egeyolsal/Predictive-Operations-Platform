@@ -10,6 +10,7 @@ public class TaskCreateDto
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; } = TaskItemStatus.ToDo;
+    public TaskPriority Priority { get; set; } = TaskPriority.Medium;
     
     [Required]
     public int AssignedUserId { get; set; }
@@ -28,6 +29,7 @@ public class TaskUpdateDto
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; }
+    public TaskPriority Priority { get; set; }
 
     [Required]
     public int AssignedUserId { get; set; }
@@ -39,12 +41,19 @@ public class TaskUpdateDto
     public double ExpectedDurationHours { get; set; }
 }
 
+public class UpdateTaskStatusDto
+{
+    [Required]
+    public TaskItemStatus Status { get; set; }
+}
+
 public class TaskResponseDto
 {
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; }
+    public TaskPriority Priority { get; set; }
     public int AssignedUserId { get; set; }
     public string? AssignedUserName { get; set; }
     public int CategoryId { get; set; }

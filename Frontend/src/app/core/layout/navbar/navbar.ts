@@ -32,9 +32,11 @@ export class Navbar implements OnInit {
   
   notifications = signal<NotificationDto[]>([]);
   unreadCount = signal(0);
+  private readNotificationIds = new Set<string>();
 
   ngOnInit() {
     this.updatePageTitle(this.router.url);
+    this.loadReadNotifications();
     this.loadNotifications();
 
     const sub = this.router.events.pipe(
@@ -98,18 +100,46 @@ export class Navbar implements OnInit {
     return `${serverUrl}${url}`;
   }
 
+  private loadReadNotifications() {
+    const saved = localStorage.getItem('read_notifications');
+    if (saved) {
+      try {
+        const ids = JSON.parse(saved);
+        if (Array.isArray(ids)) {
+          this.readNotificationIds = new Set(ids);
+        }
+      } catch (e) {
+        console.error('Error parsing read notifications', e);
+      }
+    }
+  }
+
   loadNotifications() {
     this.notificationService.getNotifications().subscribe({
       next: (data) => {
-        this.notifications.set(data);
-        this.unreadCount.set(data.length);
+        // Mark ones as read based on localStorage
+        const unreadList = data.filter(n => !this.readNotificationIds.has(n.id));
+        this.notifications.set(data.map(n => ({
+          ...n,
+          isRead: this.readNotificationIds.has(n.id)
+        })));
+        this.unreadCount.set(unreadList.length);
       },
       error: (err) => console.error('Error loading notifications', err)
     });
   }
 
   onNotificationClick(notification: NotificationDto) {
+    if (!this.readNotificationIds.has(notification.id)) {
+      this.readNotificationIds.add(notification.id);
+      localStorage.setItem('read_notifications', JSON.stringify(Array.from(this.readNotificationIds)));
+      
+      this.notifications.update(current => 
+        current.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
+      );
+      this.unreadCount.update(c => Math.max(0, c - 1));
+    }
+
     this.router.navigate([notification.link]);
-    // Optionally mark as read if we implement that feature
   }
 }

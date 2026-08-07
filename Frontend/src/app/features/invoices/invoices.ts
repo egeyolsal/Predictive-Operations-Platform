@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } fr
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -26,7 +27,7 @@ import { Auth } from '../../core/auth/auth';
   imports: [
     CommonModule, ReactiveFormsModule, TableModule, ButtonModule, 
     TabsModule, InputTextModule, SelectModule, InputNumberModule, DatePickerModule,
-    DatePipe, CurrencyPipe
+    DialogModule, DatePipe, CurrencyPipe
   ],
   templateUrl: './invoices.html',
   styleUrls: ['./invoices.scss']
@@ -48,6 +49,9 @@ export class InvoicesComponent implements OnInit {
   readonly supplierItems = signal<SupplierItemResponseDto[]>([]);
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
+
+  readonly detailsDialogVisible = signal(false);
+  readonly selectedInvoice = signal<InvoiceResponseDto | null>(null);
 
   readonly invoiceTypes = [
     { label: 'Inbound (Purchase)', value: InvoiceType.Inbound },
@@ -237,6 +241,23 @@ export class InvoicesComponent implements OnInit {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Failed to cancel invoice.' });
           }
         });
+      }
+    });
+  }
+
+  showDetails(invoice: InvoiceResponseDto): void {
+    // Show basic info first
+    this.selectedInvoice.set(invoice);
+    this.detailsDialogVisible.set(true);
+    
+    // Fetch full details (LineItems)
+    this.invoiceService.getById(invoice.id).subscribe({
+      next: (fullInvoice) => {
+        this.selectedInvoice.set(fullInvoice);
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not fetch invoice details.' });
       }
     });
   }

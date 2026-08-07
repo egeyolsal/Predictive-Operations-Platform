@@ -79,7 +79,11 @@
           <div class="flex flex-column gap-2 p-3">
             @for (notif of notifications(); track notif) {
               <a [routerLink]="notif.link" class="flex align-items-start gap-3 p-2 border-round hover:surface-hover transition-colors transition-duration-200 text-color no-underline">
-                <i class="pi mt-1" [ngClass]="{'pi-box text-orange-500': notif.type === 'inventory', 'pi-check-circle text-green-500': notif.type === 'task'}"></i>
+                <i class="pi mt-1" [ngClass]="{
+                  'pi-box text-orange-500': notif.type === 'inventory', 
+                  'pi-check-circle text-green-500': notif.type === 'task',
+                  'pi-bolt text-red-500': notif.type === 'prediction'
+                }"></i>
                 <div>
                   <div class="text-sm font-medium mb-1">{{ notif.message }}</div>
                   <div class="text-xs text-500">{{ notif.date | date:'short' }}</div>

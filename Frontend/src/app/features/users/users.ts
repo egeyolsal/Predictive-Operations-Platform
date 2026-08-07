@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { SelectModule } from 'primeng/select';
+import { AvatarModule } from 'primeng/avatar';
 import { MessageService } from 'primeng/api';
 import { Auth } from '../../core/auth/auth';
+import { API_BASE_URL } from '../../core/config/api-config';
 
 import { UsersService } from './users.service';
 import { UserAdminListDto } from './users.models';
@@ -12,7 +14,7 @@ import { UserAdminListDto } from './users.models';
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, SelectModule],
+  imports: [CommonModule, FormsModule, TableModule, SelectModule, AvatarModule],
   templateUrl: './users.html',
   styleUrls: ['./users.scss']
 })
@@ -59,5 +61,22 @@ export class UsersComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || err.error || 'Failed to update role.' });
       }
     });
+  }
+
+  getAvatarUrl(user: UserAdminListDto): string {
+    const url = user.profilePictureUrl;
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    
+    const serverUrl = API_BASE_URL.endsWith('/api') 
+      ? API_BASE_URL.substring(0, API_BASE_URL.length - 4) 
+      : API_BASE_URL;
+      
+    return `${serverUrl}${url}`;
+  }
+
+  getInitials(name: string): string {
+    if (!name) return '?';
+    return name.charAt(0).toUpperCase();
   }
 }

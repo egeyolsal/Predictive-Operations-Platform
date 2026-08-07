@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { TaskItem, TaskCreateDto, TaskUpdateDto, User, Category, TaskMaterialConsumptionDto, TaskMaterialResponseDto } from './tasks.models';
+import { TaskItem, TaskItemStatus, TaskCreateDto, TaskUpdateDto, User, Category, TaskMaterialConsumptionDto, TaskMaterialResponseDto } from './tasks.models';
 
 import { API_BASE_URL } from '../../core/config/api-config';
 
@@ -34,6 +34,10 @@ export class TasksApi {
 
   update(id: number, dto: TaskUpdateDto): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/${id}`, dto);
+  }
+
+  updateStatus(id: number, status: TaskItemStatus): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${id}/status`, { status });
   }
 
   delete(id: number): Observable<void> {

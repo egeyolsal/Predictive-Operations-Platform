@@ -60,6 +60,18 @@
     </div>
 
     <div class="field">
+      <label for="priority">Priority *</label>
+      <p-select
+        id="priority"
+        [options]="priorityOptions"
+        formControlName="priority"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+      ></p-select>
+    </div>
+
+    <div class="field">
       <label for="assignedUserId">Assigned User *</label>
       <p-select
         id="assignedUserId"
@@ -112,11 +124,13 @@
         severity="secondary"
         (click)="onHide()"
       ></p-button>
-      <p-button
-        type="submit"
-        label="Save"
-        [loading]="isSubmitting()"
-      ></p-button>
+      @if (isAdmin()) {
+        <p-button
+          type="submit"
+          label="Save"
+          [loading]="isSubmitting()"
+        ></p-button>
+      }
     </div>
   </form>
   </p-tabpanel>

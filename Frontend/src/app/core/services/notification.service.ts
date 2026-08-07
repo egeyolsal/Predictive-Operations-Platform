@@ -4,10 +4,12 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api-config';
 
 export interface NotificationDto {
+  id: string;
   type: string;
   message: string;
   link: string;
   date: Date;
+  isRead?: boolean;
 }
 
 @Injectable({

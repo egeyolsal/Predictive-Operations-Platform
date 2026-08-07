@@ -25,10 +25,19 @@
         @if (notifications().length > 0) {
           <div class="flex flex-column gap-2">
             @for (notif of notifications(); track notif) {
-              <div class="notification-item cursor-pointer p-2 border-round hover:surface-hover transition-colors transition-duration-200" (click)="onNotificationClick(notif); op.hide()">
+              <div class="notification-item cursor-pointer p-2 border-round hover:surface-hover transition-colors transition-duration-200" 
+                   [ngClass]="{'opacity-60 surface-ground': notif.isRead}"
+                   (click)="onNotificationClick(notif); op.hide()">
                 <div class="flex align-items-center gap-2 mb-1">
-                  <i class="pi" [ngClass]="{'pi-box text-orange-500': notif.type === 'inventory', 'pi-check-circle text-green-500': notif.type === 'task'}"></i>
+                  <i class="pi" [ngClass]="{
+                    'pi-box text-orange-500': notif.type === 'inventory', 
+                    'pi-check-circle text-green-500': notif.type === 'task',
+                    'pi-bolt text-red-500': notif.type === 'prediction'
+                  }"></i>
                   <span class="text-sm text-600">{{ notif.date | date:'short' }}</span>
+                  @if (!notif.isRead) {
+                    <span class="w-1rem h-1rem border-circle bg-red-500 ml-auto"></span>
+                  }
                 </div>
                 <div class="text-700 font-medium text-sm">{{ notif.message }}</div>
               </div>

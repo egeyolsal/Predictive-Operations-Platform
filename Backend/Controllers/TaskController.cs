@@ -82,6 +82,7 @@ public class TaskController : ControllerBase
             Title = dto.Title,
             Description = dto.Description,
             Status = dto.Status,
+            Priority = dto.Priority,
             AssignedUserId = dto.AssignedUserId,
             CategoryId = dto.CategoryId,
             ExpectedDurationHours = dto.ExpectedDurationHours,
@@ -113,9 +114,36 @@ public class TaskController : ControllerBase
         existingTask.Title = dto.Title;
         existingTask.Description = dto.Description;
         existingTask.Status = dto.Status;
+        existingTask.Priority = dto.Priority;
         existingTask.AssignedUserId = dto.AssignedUserId;
         existingTask.CategoryId = dto.CategoryId;
         existingTask.ExpectedDurationHours = dto.ExpectedDurationHours;
+
+        _unitOfWork.TaskItems.Update(existingTask);
+        await _unitOfWork.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTaskStatusDto dto)
+    {
+        var existingTask = await _unitOfWork.TaskItems.GetByIdAsync(id);
+        if (existingTask == null)
+            return NotFound();
+
+        var userRole = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirst("role")?.Value;
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirst("nameid")?.Value ?? User.FindFirst("sub")?.Value;
+
+        if (userRole == UserRole.Worker.ToString() && int.TryParse(userIdString, out int userId))
+        {
+            if (existingTask.AssignedUserId != userId)
+                return Forbid();
+        }
+
+        existingTask.Status = dto.Status;
+        if (dto.Status == TaskItemStatus.Done && existingTask.CompletedAt == null)
+            existingTask.CompletedAt = DateTime.UtcNow;
 
         _unitOfWork.TaskItems.Update(existingTask);
         await _unitOfWork.SaveChangesAsync();
@@ -232,6 +260,7 @@ public class TaskController : ControllerBase
                               $"Sistem, mevcut {inventoryItem.CurrentStock} adet stoğun operasyonları aksatacak kadar hızlı tükendiğini tespit etti. Lütfen aşağıdaki bilgileri kullanarak derhal sipariş geçiniz.\n\n" +
                               $"---\n**Tedarikçi Analizi:**\n{supplierInfo}",
                 Status = TaskItemStatus.ToDo,
+                Priority = TaskPriority.High,
                 AssignedUserId = assignedUserId,
                 CategoryId = task.CategoryId,
                 ExpectedDurationHours = 1,
@@ -264,6 +293,7 @@ public class TaskController : ControllerBase
         Title = task.Title,
         Description = task.Description,
         Status = task.Status,
+        Priority = task.Priority,
         AssignedUserId = task.AssignedUserId,
         AssignedUserName = task.AssignedUser?.Username,
         CategoryId = task.CategoryId,

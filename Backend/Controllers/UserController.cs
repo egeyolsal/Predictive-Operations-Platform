@@ -41,7 +41,8 @@ public class UserController : ControllerBase
             Username = u.Username,
             Email = u.Email,
             PhoneNumber = u.PhoneNumber,
-            Role = u.Role.ToString()
+            Role = u.Role.ToString(),
+            ProfilePictureUrl = u.ProfilePictureUrl
         }));
     }
 

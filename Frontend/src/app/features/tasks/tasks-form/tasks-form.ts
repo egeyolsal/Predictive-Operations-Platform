@@ -1,4 +1,4 @@
-import { Component, inject, input, output, effect, signal, OnInit, untracked } from '@angular/core';
+import { Component, inject, input, output, effect, signal, OnInit, untracked, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { DialogModule } from 'primeng/dialog';
@@ -13,7 +13,8 @@ import { MessageService } from 'primeng/api';
 import { ChangeDetectorRef } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TasksApi } from '../tasks-api';
-import { TaskItem, TaskItemStatus, User, Category, TaskMaterialResponseDto } from '../tasks.models';
+import { Auth } from '../../../core/auth/auth';
+import { TaskItem, TaskItemStatus, TaskPriority, User, Category, TaskMaterialResponseDto } from '../tasks.models';
 
 @Component({
   selector: 'app-tasks-form',
@@ -26,6 +27,9 @@ export class TasksForm implements OnInit {
   private readonly tasksApi = inject(TasksApi);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly messageService = inject(MessageService);
+  private readonly auth = inject(Auth);
+
+  readonly isAdmin = computed(() => this.auth.role() === 'Admin');
 
   readonly visible = input.required<boolean>();
   readonly editingItem = input<TaskItem | null>(null);
@@ -44,10 +48,17 @@ export class TasksForm implements OnInit {
     { label: 'Done', value: TaskItemStatus.Done },
   ];
 
+  readonly priorityOptions = [
+    { label: 'Low', value: TaskPriority.Low },
+    { label: 'Medium', value: TaskPriority.Medium },
+    { label: 'High', value: TaskPriority.High },
+  ];
+
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(200)]],
     description: [''],
     status: [TaskItemStatus.ToDo, [Validators.required]],
+    priority: [TaskPriority.Medium, [Validators.required]],
     assignedUserId: [null as number | null, [Validators.required]],
     categoryId: [null as number | null, [Validators.required]],
     expectedDurationHours: [1, [Validators.required, Validators.min(0.1)]],
@@ -67,12 +78,18 @@ export class TasksForm implements OnInit {
       const isVisible = this.visible();
       untracked(() => {
         if (isVisible) {
+          if (!this.isAdmin()) {
+            this.form.disable();
+          } else {
+            this.form.enable();
+          }
           const item = this.editingItem();
           if (item) {
             this.form.patchValue({
               title: item.title,
               description: item.description || '',
               status: item.status,
+              priority: item.priority ?? TaskPriority.Medium,
               assignedUserId: item.assignedUserId,
               categoryId: item.categoryId,
               expectedDurationHours: item.expectedDurationHours,
@@ -83,6 +100,7 @@ export class TasksForm implements OnInit {
               title: '',
               description: '',
               status: TaskItemStatus.ToDo,
+              priority: TaskPriority.Medium,
               assignedUserId: null,
               categoryId: null,
               expectedDurationHours: 1,

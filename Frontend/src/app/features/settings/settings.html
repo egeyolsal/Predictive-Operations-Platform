@@ -16,7 +16,7 @@
           
           <div class="field mb-0">
             <label for="currentPassword" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Current Password *</label>
-            <p-password id="currentPassword" formControlName="currentPassword" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
+            <p-password id="currentPassword" formControlName="currentPassword" [toggleMask]="true" [feedback]="false" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
             @if (passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched) {
               <small class="p-error block mt-2 font-medium">Current password is required.</small>
             }
@@ -43,7 +43,7 @@
 
           <div class="field mb-0">
             <label for="confirmPassword" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Confirm New Password *</label>
-            <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
+            <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true" [feedback]="false" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
           </div>
 
           <div class="mt-4">

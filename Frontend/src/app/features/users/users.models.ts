@@ -4,6 +4,7 @@ export interface UserAdminListDto {
   email: string;
   phoneNumber?: string;
   role: string;
+  profilePictureUrl?: string;
 }
 
 export interface UpdateUserRoleDto {

@@ -49,6 +49,7 @@ public class NotificationsController : ControllerBase
             {
                 notifications.Add(new NotificationDto
                 {
+                    Id = $"task_new_{t.Id}",
                     Type = "task",
                     Message = $"New task assigned: {t.Title}",
                     Link = "/tasks",
@@ -70,6 +71,7 @@ public class NotificationsController : ControllerBase
             {
                 notifications.Add(new NotificationDto
                 {
+                    Id = $"inv_low_{i.Id}",
                     Type = "inventory",
                     Message = $"Low stock alert: {i.Name} ({i.CurrentStock}/{i.CriticalThreshold})",
                     Link = "/inventory",
@@ -90,6 +92,7 @@ public class NotificationsController : ControllerBase
             {
                 notifications.Add(new NotificationDto
                 {
+                    Id = $"task_done_{t.Id}",
                     Type = "task",
                     Message = $"Task completed by {t.AssignedUser?.Username}: {t.Title}",
                     Link = "/tasks",
@@ -109,6 +112,7 @@ public class NotificationsController : ControllerBase
             {
                 notifications.Add(new NotificationDto
                 {
+                    Id = $"task_unassigned_{t.Id}",
                     Type = "task",
                     Message = $"Unassigned task waiting: {t.Title}",
                     Link = "/tasks",

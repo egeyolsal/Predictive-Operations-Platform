@@ -25,9 +25,7 @@
                 <th>Type</th>
                 <th>Customer / Supplier</th>
                 <th>Total Amount</th>
-                @if (auth.role() === 'Admin') {
-                  <th style="width: 100px; text-align: center;">Actions</th>
-                }
+                <th style="width: 120px; text-align: center;">Actions</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-inv>
@@ -50,8 +48,15 @@
                   {{ inv.type === 'Inbound' ? inv.supplierName : inv.customerName || '-' }}
                 </td>
                 <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">{{ inv.totalAmount | currency }}</td>
-                @if (auth.role() === 'Admin') {
-                  <td style="text-align: center;">
+                <td style="text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
+                  <p-button icon="pi pi-eye" 
+                            severity="info" 
+                            [text]="true" 
+                            [rounded]="true" 
+                            title="View Details"
+                            (onClick)="showDetails(inv)">
+                  </p-button>
+                  @if (auth.role() === 'Admin') {
                     <p-button icon="pi pi-times" 
                               severity="danger" 
                               [text]="true" 
@@ -60,8 +65,8 @@
                               [disabled]="inv.isCancelled"
                               (onClick)="confirmCancel(inv)">
                     </p-button>
-                  </td>
-                }
+                  }
+                </td>
               </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
@@ -155,4 +160,46 @@
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>
+
+  <p-dialog [visible]="detailsDialogVisible()" (visibleChange)="detailsDialogVisible.set($event)" [modal]="true" [header]="'Invoice Details: ' + (selectedInvoice()?.invoiceNumber || '')" [style]="{width: '800px'}" [maximizable]="true">
+    @if (selectedInvoice(); as invoice) {
+      <div class="flex flex-column gap-2 mb-4 p-3 surface-50 border-round">
+        <div><strong>Date:</strong> {{ invoice.invoiceDate | date:'medium' }}</div>
+        <div><strong>Type:</strong> 
+          <span class="p-badge ml-2" 
+                [class.p-badge-success]="invoice.type === 'Inbound'"
+                [class.p-badge-info]="invoice.type === 'Outbound'"
+                [class.p-badge-warning]="invoice.type === 'InternalConsumption'">
+            {{ invoice.type }}
+          </span>
+        </div>
+        @if (invoice.type !== 'InternalConsumption') {
+          <div><strong>{{ invoice.type === 'Inbound' ? 'Supplier' : 'Customer' }}:</strong> {{ invoice.type === 'Inbound' ? invoice.supplierName : invoice.customerName }}</div>
+        }
+        <div><strong>Total Amount:</strong> <span class="text-xl font-bold text-primary ml-2">{{ invoice.totalAmount | currency }}</span></div>
+      </div>
+
+      <p-table [value]="invoice.lineItems" styleClass="p-datatable-sm shadow-1">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Product Name</th>
+            <th class="text-right">Quantity</th>
+            <th class="text-right">Unit Price</th>
+            <th class="text-right">Total Price</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td class="font-semibold">{{ item.inventoryItemName }}</td>
+            <td class="text-right">{{ item.quantity }}</td>
+            <td class="text-right">{{ item.unitPrice | currency }}</td>
+            <td class="text-right font-bold">{{ item.totalPrice | currency }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+    <ng-template pTemplate="footer">
+        <p-button icon="pi pi-times" (onClick)="detailsDialogVisible.set(false)" label="Close" styleClass="p-button-text"></p-button>
+    </ng-template>
+  </p-dialog>
 </div>

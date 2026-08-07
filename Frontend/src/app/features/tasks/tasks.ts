@@ -8,7 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DatePipe } from '@angular/common';
 import { TasksApi } from './tasks-api';
-import { TaskItem, TaskItemStatus } from './tasks.models';
+import { TaskItem, TaskItemStatus, TaskPriority } from './tasks.models';
 import { TasksForm } from './tasks-form/tasks-form';
 import { Auth } from '../../core/auth/auth';
 
@@ -34,6 +34,7 @@ export class Tasks implements OnInit {
   readonly editingItem = signal<TaskItem | null>(null);
 
   readonly TaskItemStatus = TaskItemStatus; // Expose enum to template
+  readonly TaskPriority = TaskPriority; // Expose enum to template
 
   readonly filteredItems = computed(() => {
     const term = this.searchTerm().trim();
@@ -123,6 +124,30 @@ export class Tasks implements OnInit {
     });
   }
 
+  onCompleteTask(item: TaskItem): void {
+    if (!confirm(`Mark task "${item.title}" as completed?`)) {
+      return;
+    }
+
+    this.tasksApi.updateStatus(item.id, TaskItemStatus.Done).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Task marked as completed.',
+        });
+        this.loadItems();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to update task status.',
+        });
+      },
+    });
+  }
+
   getStatusSeverity(status: TaskItemStatus): 'info' | 'warn' | 'success' | 'secondary' {
     switch (status) {
       case TaskItemStatus.ToDo:
@@ -146,6 +171,24 @@ export class Tasks implements OnInit {
         return 'Done';
       default:
         return 'Unknown';
+    }
+  }
+
+  getPrioritySeverity(priority: TaskPriority): 'info' | 'warn' | 'danger' {
+    switch (priority) {
+      case TaskPriority.Low: return 'info';
+      case TaskPriority.Medium: return 'warn';
+      case TaskPriority.High: return 'danger';
+      default: return 'info';
+    }
+  }
+
+  getPriorityLabel(priority: TaskPriority): string {
+    switch (priority) {
+      case TaskPriority.Low: return 'Low';
+      case TaskPriority.Medium: return 'Medium';
+      case TaskPriority.High: return 'High';
+      default: return 'Unknown';
     }
   }
 

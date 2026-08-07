@@ -12,6 +12,14 @@ public enum TaskItemStatus
     Done
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum TaskPriority
+{
+    Low,
+    Medium,
+    High
+}
+
 public class TaskItem
 {
     public int Id { get; set; }
@@ -23,6 +31,7 @@ public class TaskItem
     public string? Description { get; set; }
 
     public TaskItemStatus Status { get; set; } = TaskItemStatus.ToDo;
+    public TaskPriority Priority { get; set; } = TaskPriority.Medium;
 
     public int AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }

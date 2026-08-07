@@ -21,7 +21,16 @@
     <ng-template pTemplate="body" let-user>
       <tr>
         <td>{{ user.id }}</td>
-        <td class="font-semibold">{{ user.username }}</td>
+        <td>
+          <div class="flex align-items-center gap-3">
+            @if (user.profilePictureUrl) {
+              <p-avatar [image]="getAvatarUrl(user)" shape="circle" styleClass="shadow-1"></p-avatar>
+            } @else {
+              <p-avatar [label]="getInitials(user.username)" shape="circle" styleClass="custom-user-avatar shadow-1"></p-avatar>
+            }
+            <span class="font-semibold">{{ user.username }}</span>
+          </div>
+        </td>
         <td>{{ user.email }}</td>
         <td>{{ user.phoneNumber || '-' }}</td>
         <td>

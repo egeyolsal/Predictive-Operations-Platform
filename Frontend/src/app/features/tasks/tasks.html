@@ -32,6 +32,7 @@
   <ng-template pTemplate="header">
     <tr>
       <th pSortableColumn="title">Title <p-sortIcon field="title" /></th>
+      <th pSortableColumn="priority">Priority <p-sortIcon field="priority" /></th>
       <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
       @if (isAdmin()) {
         <th pSortableColumn="assignedUserId">Assigned User <p-sortIcon field="assignedUserId" /></th>
@@ -39,9 +40,7 @@
       <th pSortableColumn="categoryId">Category <p-sortIcon field="categoryId" /></th>
       <th pSortableColumn="expectedDurationHours">Expected (h) <p-sortIcon field="expectedDurationHours" /></th>
       <th pSortableColumn="createdAt">Created <p-sortIcon field="createdAt" /></th>
-      @if (isAdmin()) {
-        <th class="actions-column">Actions</th>
-      }
+      <th class="actions-column">Actions</th>
     </tr>
   </ng-template>
 
@@ -57,6 +56,12 @@
       </td>
       <td>
         <p-tag
+          [severity]="getPrioritySeverity(item.priority)"
+          [value]="getPriorityLabel(item.priority)"
+        ></p-tag>
+      </td>
+      <td>
+        <p-tag
           [severity]="getStatusSeverity(item.status)"
           [value]="getStatusLabel(item.status)"
         ></p-tag>
@@ -67,15 +72,16 @@
       <td>{{ item.categoryName || item.categoryId }}</td>
       <td>{{ item.expectedDurationHours }}</td>
       <td>{{ item.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
-      @if (isAdmin()) {
-        <td>
-          <div class="action-buttons">
+      <td>
+        <div class="action-buttons">
+          @if (isAdmin()) {
             <p-button
               icon="pi pi-pencil"
               severity="info"
               [text]="true"
               [rounded]="true"
               (click)="openEditDialog(item)"
+              pTooltip="Edit Task"
             ></p-button>
             <p-button
               icon="pi pi-trash"
@@ -83,10 +89,30 @@
               [text]="true"
               [rounded]="true"
               (click)="onDelete(item)"
+              pTooltip="Delete Task"
             ></p-button>
-          </div>
-        </td>
-      }
+          } @else {
+            @if (item.status !== TaskItemStatus.Done) {
+              <p-button
+                icon="pi pi-check"
+                severity="success"
+                [text]="true"
+                [rounded]="true"
+                (click)="onCompleteTask(item)"
+                pTooltip="Mark as Done"
+              ></p-button>
+            }
+            <p-button
+              icon="pi pi-box"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              (click)="openEditDialog(item)"
+              pTooltip="Materials"
+            ></p-button>
+          }
+        </div>
+      </td>
     </tr>
   </ng-template>
 
