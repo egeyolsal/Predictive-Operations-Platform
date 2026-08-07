@@ -110,7 +110,7 @@ export class InvoicesComponent implements OnInit {
     const group = this.fb.group({
       inventoryItemId: [null, Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
-      unitPrice: [{value: 0, disabled: this.form.get('type')?.value === InvoiceType.Inbound}, [Validators.required, Validators.min(0)]]
+      unitPrice: [{value: 0, disabled: this.form.get('type')?.value === InvoiceType.Inbound}, [Validators.required, Validators.min(0.01)]]
     });
 
     group.get('inventoryItemId')?.valueChanges.subscribe(itemId => {
@@ -187,7 +187,7 @@ export class InvoicesComponent implements OnInit {
 
     const payload = {
       invoiceNumber: rawVal.invoiceNumber,
-      invoiceDate: (rawVal.invoiceDate as Date).toISOString(),
+      invoiceDate: new Date((rawVal.invoiceDate as Date).getTime() - ((rawVal.invoiceDate as Date).getTimezoneOffset() * 60000)).toISOString(),
       type: rawVal.type,
       customerId: rawVal.customerId,
       supplierId: rawVal.supplierId,

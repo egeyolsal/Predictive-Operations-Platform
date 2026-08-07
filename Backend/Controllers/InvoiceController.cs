@@ -21,9 +21,7 @@ public class InvoiceController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<InvoiceResponseDto>>> GetAll()
     {
-        var invoices = await _unitOfWork.Invoices.GetAllAsync();
-        // For a full implementation, we need eager loading.
-        // Doing basic mapping for now.
+        var invoices = await _unitOfWork.Invoices.GetAllAsync(i => i.Customer, i => i.Supplier);
         return Ok(invoices.Select(invoice => new InvoiceResponseDto
         {
             Id = invoice.Id,
@@ -31,7 +29,11 @@ public class InvoiceController : ControllerBase
             InvoiceDate = invoice.InvoiceDate,
             Type = invoice.Type.ToString(),
             CustomerId = invoice.CustomerId,
-            TotalAmount = invoice.TotalAmount
+            CustomerName = invoice.Customer?.Name,
+            SupplierId = invoice.SupplierId,
+            SupplierName = invoice.Supplier?.Name,
+            TotalAmount = invoice.TotalAmount,
+            IsCancelled = invoice.IsCancelled
         }));
     }
 

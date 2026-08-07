@@ -52,7 +52,7 @@ export class InventoryForm {
 
   readonly assignForm = this.fb.nonNullable.group({
     supplierId: [0, [Validators.required, Validators.min(1)]],
-    price: [0, [Validators.required, Validators.min(0)]],
+    price: [0, [Validators.required, Validators.min(0.01)]],
     leadTimeDays: [0, [Validators.required, Validators.min(0)]],
   });
 

@@ -126,7 +126,8 @@ export class TasksForm implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error || 'Failed to consume material' });
+        const errMsg = typeof err.error === 'string' ? err.error : (err.error?.message || err.error?.title || err.message || 'Failed to consume material');
+        this.messageService.add({ severity: 'error', summary: 'Hata', detail: errMsg });
       }
     });
   }
