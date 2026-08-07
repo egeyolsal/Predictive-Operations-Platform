@@ -5,9 +5,9 @@
     gap: 2rem;
     margin-bottom: 2rem;
     padding: 2rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
   }
 
   .line-item-row {
@@ -17,9 +17,9 @@
     align-items: flex-end;
     padding: 1.5rem;
     margin-bottom: 1rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
   }
 
   @media (max-width: 768px) {
@@ -36,19 +36,13 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--text-color);
   }
 
   .full-width {
     width: 100% !important;
   }
 
-  .surface-card {
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
 
   .section-header {
     display: flex;
