@@ -15,6 +15,21 @@
 
   <p-tabpanels>
     <p-tabpanel value="0">
+      @if (isCriticalStockTask()) {
+        <div class="ai-autonomous-panel mb-4 p-4 border-round-2xl surface-ground border-1 border-red-200 shadow-2 flex flex-column gap-3">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-sparkles text-red-500 text-2xl" style="animation: pulse 2s infinite;"></i>
+            <h3 class="m-0 text-red-600 font-bold tracking-tight">Otonom Aksiyon (AI Prediction)</h3>
+          </div>
+          <p class="m-0 text-700 line-height-3">Sistem analizleri sonucunda bu kalemin stok seviyesinin operasyonları riske atacak seviyeye düştüğü tespit edildi. Kesintiyi önlemek için en uygun tedarikçiye tek tıkla sipariş geçebilirsiniz.</p>
+          <div>
+            <a [href]="getSupplierMailtoLink()" target="_blank" class="p-button p-component p-button-danger border-round-3xl font-bold px-4 py-2 text-white no-underline inline-flex align-items-center gap-2 shadow-2 transition-transform hover:-translate-y-1">
+              <i class="pi pi-send"></i>
+              <span>Tedarikçiye Sipariş Geç</span>
+            </a>
+          </div>
+        </div>
+      }
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-layout">
     <div class="field">
       <label for="title">Title *</label>

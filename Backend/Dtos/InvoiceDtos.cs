@@ -28,8 +28,10 @@ public class InvoiceCreateDto
     [Required]
     public InvoiceType Type { get; set; }
 
-    // Can be null for Internal Consumption
     public int? CustomerId { get; set; }
+
+    // Can be null for Outbound or Internal Consumption
+    public int? SupplierId { get; set; }
 
     [Required]
     [MinLength(1, ErrorMessage = "An invoice must contain at least one line item.")]
@@ -54,6 +56,8 @@ public class InvoiceResponseDto
     public string Type { get; set; } = string.Empty;
     public int? CustomerId { get; set; }
     public string? CustomerName { get; set; }
+    public int? SupplierId { get; set; }
+    public string? SupplierName { get; set; }
     public decimal TotalAmount { get; set; }
     public bool IsCancelled { get; set; }
     

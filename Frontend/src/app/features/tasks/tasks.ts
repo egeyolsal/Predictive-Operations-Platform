@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
@@ -13,7 +14,7 @@ import { Auth } from '../../core/auth/auth';
 
 @Component({
   selector: 'app-tasks',
-  imports: [TableModule, TagModule, InputTextModule, ButtonModule, ToastModule, TasksForm, DatePipe],
+  imports: [CommonModule, TableModule, TagModule, InputTextModule, ButtonModule, ToastModule, TasksForm, DatePipe],
   providers: [MessageService],
   templateUrl: './tasks.html',
   styleUrl: './tasks.scss',
@@ -39,9 +40,9 @@ export class Tasks implements OnInit {
     if (!term) {
       return this.items();
     }
-    
+
     const lowerTerm = term.replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
-    
+
     return this.items().filter((item) => {
       const title = (item.title || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
       return title.startsWith(lowerTerm);
@@ -56,7 +57,11 @@ export class Tasks implements OnInit {
     this.isLoading.set(true);
     this.tasksApi.getAll().subscribe({
       next: (data) => {
-        this.items.set(data);
+        const formattedData = data.map(item => ({
+          ...item,
+          createdAt: (item.createdAt && !item.createdAt.endsWith('Z')) ? item.createdAt + 'Z' : item.createdAt
+        }));
+        this.items.set(formattedData);
         this.isLoading.set(false);
       },
       error: () => {
@@ -142,5 +147,15 @@ export class Tasks implements OnInit {
       default:
         return 'Unknown';
     }
+  }
+
+  isCriticalStockTask(task: TaskItem): boolean {
+    return !!task.title && task.title.includes('Kritik Stok Uyarısı');
+  }
+
+  extractSupplierEmail(description: string | null | undefined): string | null {
+    if (!description) return null;
+    const emailMatch = description.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+    return emailMatch ? emailMatch[1] : 'supplier@example.com';
   }
 }

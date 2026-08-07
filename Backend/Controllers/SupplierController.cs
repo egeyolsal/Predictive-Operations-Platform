@@ -32,6 +32,27 @@ public class SupplierController : ControllerBase
         }));
     }
 
+    [HttpGet("{id}/items")]
+    public async Task<ActionResult<IEnumerable<SupplierItemResponseDto>>> GetSupplierItems(int id)
+    {
+        var supplier = await _unitOfWork.Suppliers.GetByIdAsync(id);
+        if (supplier == null) return NotFound("Supplier not found.");
+
+        var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(
+            isup => isup.SupplierId == id, 
+            isup => isup.InventoryItem!);
+
+        return Ok(itemSuppliers.Select(isup => new SupplierItemResponseDto
+        {
+            InventoryItemId = isup.InventoryItemId,
+            InventoryItemName = isup.InventoryItem?.Name ?? "Unknown",
+            Category = isup.InventoryItem?.Category ?? "Unknown",
+            CurrentStock = isup.InventoryItem?.CurrentStock ?? 0,
+            Price = isup.Price,
+            LeadTimeDays = isup.LeadTimeDays
+        }));
+    }
+
     [HttpPost]
     public async Task<ActionResult<SupplierResponseDto>> Create(SupplierCreateDto dto)
     {

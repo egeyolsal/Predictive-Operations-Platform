@@ -46,8 +46,15 @@
   </ng-template>
 
   <ng-template pTemplate="body" let-item>
-    <tr>
-      <td>{{ item.title }}</td>
+    <tr [ngClass]="{'bg-red-50 border-left-3 border-red-500': isCriticalStockTask(item)}">
+      <td>
+        <div class="flex align-items-center">
+          @if (isCriticalStockTask(item)) {
+            <i class="pi pi-sparkles text-red-500 mr-2 text-xl" style="animation: pulse 2s infinite;"></i>
+          }
+          <span [class.font-bold]="isCriticalStockTask(item)" [class.text-red-700]="isCriticalStockTask(item)">{{ item.title }}</span>
+        </div>
+      </td>
       <td>
         <p-tag
           [severity]="getStatusSeverity(item.status)"

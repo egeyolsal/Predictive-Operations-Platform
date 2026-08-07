@@ -18,6 +18,10 @@ public class Invoice
     public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
 
+    // SupplierId is nullable, only used for Inbound invoices
+    public int? SupplierId { get; set; }
+    public Supplier? Supplier { get; set; }
+
     public decimal TotalAmount { get; set; }
 
     public bool IsCancelled { get; set; } = false;

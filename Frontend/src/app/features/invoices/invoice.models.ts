@@ -20,6 +20,8 @@ export interface InvoiceResponseDto {
   type: string;
   customerId?: number;
   customerName?: string;
+  supplierId?: number;
+  supplierName?: string;
   totalAmount: number;
   isCancelled: boolean;
   lineItems: InvoiceLineItemResponseDto[];
@@ -33,8 +35,9 @@ export interface InvoiceLineItemCreateDto {
 
 export interface InvoiceCreateDto {
   invoiceNumber: string;
-  invoiceDate: string; // ISO string
+  invoiceDate: string | Date;
   type: InvoiceType;
   customerId?: number | null;
+  supplierId?: number | null;
   lineItems: InvoiceLineItemCreateDto[];
 }

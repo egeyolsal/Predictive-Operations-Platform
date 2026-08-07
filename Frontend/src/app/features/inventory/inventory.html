@@ -29,6 +29,7 @@
     <tr>
       <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
       <th pSortableColumn="category">Category <p-sortIcon field="category" /></th>
+      <th pSortableColumn="barcode">Barcode <p-sortIcon field="barcode" /></th>
       <th pSortableColumn="currentStock">Current Stock <p-sortIcon field="currentStock" /></th>
       <th pSortableColumn="criticalThreshold">Critical Threshold <p-sortIcon field="criticalThreshold" /></th>
       <th>Status</th>
@@ -42,6 +43,13 @@
     <tr>
       <td>{{ item.name }}</td>
       <td>{{ item.category }}</td>
+      <td>
+        @if (item.barcode) {
+          <span class="font-mono text-sm bg-gray-100 px-2 py-1 border-round">{{ item.barcode }}</span>
+        } @else {
+          <span class="text-500">-</span>
+        }
+      </td>
       <td>{{ item.currentStock }}</td>
       <td>{{ item.criticalThreshold }}</td>
       <td>
@@ -62,7 +70,7 @@
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="6">No inventory items found.</td>
+      <td colspan="7">No inventory items found.</td>
     </tr>
   </ng-template>
 </p-table>

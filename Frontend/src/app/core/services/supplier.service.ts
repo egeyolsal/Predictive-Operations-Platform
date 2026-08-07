@@ -2,6 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Supplier, SupplierCreateDto, ItemSupplierAssignDto } from '../models/supplier.model';
+
+export interface SupplierItemResponseDto {
+  inventoryItemId: number;
+  inventoryItemName: string;
+  category: string;
+  currentStock: number;
+  price: number;
+  leadTimeDays: number;
+}
 import { API_BASE_URL } from '../config/api-config';
 
 @Injectable({
@@ -30,5 +39,9 @@ export class SupplierService {
 
   assignItem(supplierId: number, dto: ItemSupplierAssignDto): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${supplierId}/assign-item`, dto);
+  }
+
+  getSupplierItems(supplierId: number): Observable<SupplierItemResponseDto[]> {
+    return this.http.get<SupplierItemResponseDto[]>(`${this.apiUrl}/${supplierId}/items`);
   }
 }

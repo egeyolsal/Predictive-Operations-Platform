@@ -34,7 +34,7 @@ export class TasksForm implements OnInit {
   readonly saved = output<void>();
 
   readonly isSubmitting = signal(false);
-  
+
   readonly users = signal<User[]>([]);
   readonly categories = signal<Category[]>([]);
 
@@ -109,7 +109,7 @@ export class TasksForm implements OnInit {
       this.consumeForm.markAllAsTouched();
       return;
     }
-    
+
     const taskId = this.editingItem()?.id;
     if (!taskId) return;
 
@@ -140,6 +140,33 @@ export class TasksForm implements OnInit {
     this.visibleChange.emit(false);
   }
 
+  isCriticalStockTask(): boolean {
+    const item = this.editingItem();
+    return !!item && !!item.title && item.title.includes('Kritik Stok Uyarısı');
+  }
+
+  getSupplierEmail(): string {
+    const item = this.editingItem();
+    if (!item || !item.description) return 'supplier@example.com';
+    const emailMatch = item.description.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+    return emailMatch ? emailMatch[1] : 'supplier@example.com';
+  }
+
+  getSupplierMailtoLink(): string {
+    const email = this.getSupplierEmail();
+    const item = this.editingItem();
+    const subject = encodeURIComponent('Acil Sipariş Talebi - Kritik Stok');
+    const body = encodeURIComponent(`Merhaba,\n\nSistemimiz tarafından otomatik oluşturulan kritik stok uyarısı sebebiyle acil sipariş geçmek istiyoruz.\n\nGörev: ${item?.title}\n\nİyi çalışmalar.`);
+    return `mailto:${email}?subject=${subject}&body=${body}`;
+  }
+
+  private loadUsersAndCategories(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -153,7 +180,7 @@ export class TasksForm implements OnInit {
       assignedUserId: rawValue.assignedUserId!,
       categoryId: rawValue.categoryId!,
     };
-    
+
     const editing = this.editingItem();
 
     const request$: Observable<TaskItem | void> = editing

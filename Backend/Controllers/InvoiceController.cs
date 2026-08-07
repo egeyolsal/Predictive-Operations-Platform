@@ -40,9 +40,14 @@ public class InvoiceController : ControllerBase
     public async Task<ActionResult<InvoiceResponseDto>> Create(InvoiceCreateDto dto)
     {
         // 1. Basic validation
-        if (dto.Type != InvoiceType.InternalConsumption && !dto.CustomerId.HasValue)
+        if (dto.Type == InvoiceType.Outbound && !dto.CustomerId.HasValue)
         {
-            return BadRequest("Customer is required for Inbound and Outbound invoices.");
+            return BadRequest("Customer is required for Outbound invoices.");
+        }
+
+        if (dto.Type == InvoiceType.Inbound && !dto.SupplierId.HasValue)
+        {
+            return BadRequest("Supplier is required for Inbound invoices.");
         }
 
         if (dto.CustomerId.HasValue)
@@ -50,7 +55,16 @@ public class InvoiceController : ControllerBase
             var customerExists = await _unitOfWork.Customers.GetByIdAsync(dto.CustomerId.Value);
             if (customerExists == null)
             {
-                return BadRequest($"Customer with ID {dto.CustomerId.Value} not found. Please create a customer first.");
+                return BadRequest($"Customer with ID {dto.CustomerId.Value} not found.");
+            }
+        }
+
+        if (dto.SupplierId.HasValue)
+        {
+            var supplierExists = await _unitOfWork.Suppliers.GetByIdAsync(dto.SupplierId.Value);
+            if (supplierExists == null)
+            {
+                return BadRequest($"Supplier with ID {dto.SupplierId.Value} not found.");
             }
         }
 
@@ -100,7 +114,8 @@ public class InvoiceController : ControllerBase
             InvoiceNumber = dto.InvoiceNumber,
             InvoiceDate = dto.InvoiceDate,
             Type = dto.Type,
-            CustomerId = dto.Type == InvoiceType.InternalConsumption ? null : dto.CustomerId,
+            CustomerId = dto.Type == InvoiceType.Outbound ? dto.CustomerId : null,
+            SupplierId = dto.Type == InvoiceType.Inbound ? dto.SupplierId : null,
             TotalAmount = dto.LineItems.Sum(li => li.Quantity * li.UnitPrice)
         };
 
@@ -171,14 +186,20 @@ public class InvoiceController : ControllerBase
         await _unitOfWork.Invoices.AddAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
 
-        // 7. Map to Response (We could fetch the customer to get the name, but for now we skip or fetch it)
+        // 7. Map to Response
         Customer? customer = null;
         if (invoice.CustomerId.HasValue)
         {
             customer = await _unitOfWork.Customers.GetByIdAsync(invoice.CustomerId.Value);
         }
 
-        return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, MapToResponseDto(invoice, customer, inventoryItems));
+        Supplier? invoiceSupplier = null;
+        if (invoice.SupplierId.HasValue)
+        {
+            invoiceSupplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
+        }
+
+        return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, MapToResponseDto(invoice, customer, invoiceSupplier, inventoryItems));
     }
 
     [HttpGet("{id}")]
@@ -203,10 +224,16 @@ public class InvoiceController : ControllerBase
             customer = await _unitOfWork.Customers.GetByIdAsync(invoice.CustomerId.Value);
         }
         
+        Supplier? supplier = null;
+        if (invoice.SupplierId.HasValue)
+        {
+            supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
+        }
+        
         var allInventoryItems = await _unitOfWork.InventoryItems.GetAllAsync();
         var inventoryItemsDict = allInventoryItems.ToDictionary(i => i.Id);
 
-        return Ok(MapToResponseDto(invoice, customer, inventoryItemsDict));
+        return Ok(MapToResponseDto(invoice, customer, supplier, inventoryItemsDict));
     }
 
     [Authorize(Roles = "Admin")]
@@ -253,7 +280,7 @@ public class InvoiceController : ControllerBase
         return Ok(new { message = "Invoice successfully cancelled and stock reverted." });
     }
 
-    private static InvoiceResponseDto MapToResponseDto(Invoice invoice, Customer? customer, Dictionary<int, InventoryItem> inventoryItems)
+    private static InvoiceResponseDto MapToResponseDto(Invoice invoice, Customer? customer, Supplier? supplier, Dictionary<int, InventoryItem> inventoryItems)
     {
         return new InvoiceResponseDto
         {
@@ -263,6 +290,8 @@ public class InvoiceController : ControllerBase
             Type = invoice.Type.ToString(),
             CustomerId = invoice.CustomerId,
             CustomerName = customer?.Name,
+            SupplierId = invoice.SupplierId,
+            SupplierName = supplier?.Name,
             TotalAmount = invoice.TotalAmount,
             IsCancelled = invoice.IsCancelled,
             LineItems = invoice.LineItems.Select(li => new InvoiceLineItemResponseDto

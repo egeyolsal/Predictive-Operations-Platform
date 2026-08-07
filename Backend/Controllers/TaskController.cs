@@ -155,6 +155,12 @@ public class TaskController : ControllerBase
         if (inventoryItem.CurrentStock < dto.Quantity)
             return BadRequest($"Insufficient stock for '{inventoryItem.Name}'. Requested: {dto.Quantity}, Available: {inventoryItem.CurrentStock}");
 
+        // 3.5 Calculate Unit Cost based on Suppliers
+        var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(isup => isup.InventoryItemId == inventoryItem.Id);
+        var optimumItemSupplier = itemSuppliers.OrderBy(isup => isup.Price).FirstOrDefault();
+        decimal unitCost = optimumItemSupplier?.Price ?? 0m;
+        decimal totalCost = unitCost * dto.Quantity;
+
         // 4. Create Internal Consumption Invoice
         string shortCode = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
         var invoice = new Invoice
@@ -162,14 +168,14 @@ public class TaskController : ControllerBase
             InvoiceNumber = $"TASK-{task.Id}-{shortCode}",
             InvoiceDate = DateTime.UtcNow,
             Type = InvoiceType.InternalConsumption,
-            TotalAmount = 0 // Usually 0 for internal consumption, or could be cost value
+            TotalAmount = totalCost
         };
 
         var lineItem = new InvoiceLineItem
         {
             InventoryItemId = inventoryItem.Id,
             Quantity = dto.Quantity,
-            UnitPrice = 0 // Cost is handled separately or 0 for now
+            UnitPrice = unitCost
         };
         invoice.LineItems.Add(lineItem);
         await _unitOfWork.Invoices.AddAsync(invoice);
@@ -178,36 +184,58 @@ public class TaskController : ControllerBase
         inventoryItem.CurrentStock -= dto.Quantity;
         _unitOfWork.InventoryItems.Update(inventoryItem);
 
-        if (inventoryItem.CurrentStock < inventoryItem.CriticalThreshold)
+        // --- PREDICTIVE ANALYTICS ALGORITHM ---
+        // 5.1 Calculate Daily Consumption (Velocity) over the last 30 days
+        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+        var pastTransactions = await _unitOfWork.InventoryTransactions.FindAsync(
+            it => it.InventoryItemId == inventoryItem.Id && it.TransactionDate >= thirtyDaysAgo);
+        
+        int totalConsumedIn30Days = pastTransactions.Sum(it => it.QuantityUsed) + dto.Quantity;
+        double dailyConsumptionRate = totalConsumedIn30Days / 30.0;
+
+        // 5.2 Calculate Days Until Stockout
+        double daysUntilStockOut = 999;
+        if (dailyConsumptionRate > 0)
         {
-            // Find an Admin user to assign the task to
+            daysUntilStockOut = inventoryItem.CurrentStock / dailyConsumptionRate;
+        }
+
+        // 5.3 Fetch Supplier Info & Lead Time (Already fetched above)
+        int leadTimeDays = optimumItemSupplier?.LeadTimeDays ?? 3; // Default 3 days
+
+        // 5.4 Decision: Is it critical? (Stock runs out before supplier can deliver, OR stock out in < 3 days)
+        bool isCritical = (daysUntilStockOut <= leadTimeDays) || (daysUntilStockOut <= 3.0) || (inventoryItem.CurrentStock < inventoryItem.CriticalThreshold);
+
+        if (isCritical && inventoryItem.CurrentStock > 0)
+        {
             var adminUsers = await _unitOfWork.Users.FindAsync(u => u.Role == UserRole.Admin);
             var adminUser = adminUsers.FirstOrDefault();
             int assignedUserId = adminUser?.Id ?? task.AssignedUserId;
 
-            // Find the optimum supplier (Lowest Price)
-            string supplierInfo = "Optimum tedarikçi bulunamadı (Ürüne atanmış tedarikçi yok).";
-            
-            var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(isup => isup.InventoryItemId == inventoryItem.Id);
-            var optimumItemSupplier = itemSuppliers.OrderBy(isup => isup.Price).FirstOrDefault();
-
+            string supplierInfo = "Optimum tedarikçi bulunamadı.";
             if (optimumItemSupplier != null)
             {
                 var supplier = await _unitOfWork.Suppliers.GetByIdAsync(optimumItemSupplier.SupplierId);
                 if (supplier != null)
                 {
-                    supplierInfo = $"Optimum Tedarikçi: {supplier.Name} (Fiyat: {optimumItemSupplier.Price} TL, İletişim: {supplier.ContactName ?? "-"}, Tel: {supplier.Phone ?? "-"})";
+                    supplierInfo = $"Önerilen Tedarikçi: {supplier.Name} (Fiyat: {optimumItemSupplier.Price} TL)\nE-posta: {supplier.Email ?? "bulunamadi@tedarik.com"}\nLead Time: {optimumItemSupplier.LeadTimeDays} Gün";
                 }
             }
 
             var reorderTask = new TaskItem
             {
-                Title = $"⚠️ ACİL: '{inventoryItem.Name}' için Stok Kritik Seviyede",
-                Description = $"Ürün stoğu {inventoryItem.CurrentStock} adede düşmüştür (Kritik Eşik: {inventoryItem.CriticalThreshold}). Lütfen acilen tedarik/satın alma işlemlerini başlatın.\n\n**{supplierInfo}**",
+                Title = $"🚨 Kritik Stok Uyarısı: {inventoryItem.Name}",
+                Description = $"**🤖 YAPAY ZEKA STOK ÖNGÖRÜSÜ (PREDICTIVE ANALYTICS)**\n\n" +
+                              $"- **Son 30 Gün Tüketim:** {totalConsumedIn30Days} adet\n" +
+                              $"- **Günlük Tüketim Hızı (Velocity):** {Math.Round(dailyConsumptionRate, 2)} adet/gün\n" +
+                              $"- **Tahmini Tükenme Süresi:** {Math.Round(daysUntilStockOut, 1)} gün kaldı!\n\n" +
+                              $"Sistem, mevcut {inventoryItem.CurrentStock} adet stoğun operasyonları aksatacak kadar hızlı tükendiğini tespit etti. Lütfen aşağıdaki bilgileri kullanarak derhal sipariş geçiniz.\n\n" +
+                              $"---\n**Tedarikçi Analizi:**\n{supplierInfo}",
                 Status = TaskItemStatus.ToDo,
                 AssignedUserId = assignedUserId,
-                CategoryId = task.CategoryId, // Or another category
-                ExpectedDurationHours = 2,
+                CategoryId = task.CategoryId,
+                ExpectedDurationHours = 1,
+                IsAnomalous = true,
                 CreatedAt = DateTime.UtcNow
             };
             

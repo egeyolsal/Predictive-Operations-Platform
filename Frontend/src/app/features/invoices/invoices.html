@@ -46,7 +46,9 @@
                     <span class="p-badge p-badge-danger ml-2">Cancelled</span>
                   }
                 </td>
-                <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">{{ inv.customerName || '-' }}</td>
+                <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">
+                  {{ inv.type === 'Inbound' ? inv.supplierName : inv.customerName || '-' }}
+                </td>
                 <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">{{ inv.totalAmount | currency }}</td>
                 @if (auth.role() === 'Admin') {
                   <td style="text-align: center;">
@@ -92,10 +94,19 @@
                 <p-select id="type" formControlName="type" [options]="invoiceTypes" optionLabel="label" optionValue="value" (onChange)="onTypeChange()" styleClass="full-width"></p-select>
               </div>
 
-              <div class="field">
-                <label for="customerId">Customer / Supplier</label>
-                <p-select id="customerId" formControlName="customerId" [options]="customers()" optionLabel="name" optionValue="id" placeholder="Select one" [disabled]="form.get('type')?.value === 2" styleClass="full-width"></p-select>
-              </div>
+              @if (form.get('type')?.value === 1) { <!-- Outbound -->
+                <div class="field">
+                  <label for="customerId">Customer *</label>
+                  <p-select id="customerId" formControlName="customerId" [options]="customers()" optionLabel="name" optionValue="id" placeholder="Select customer" styleClass="full-width"></p-select>
+                </div>
+              }
+              
+              @if (form.get('type')?.value === 0) { <!-- Inbound -->
+                <div class="field">
+                  <label for="supplierId">Supplier *</label>
+                  <p-select id="supplierId" formControlName="supplierId" [options]="suppliers()" optionLabel="name" optionValue="id" placeholder="Select supplier" styleClass="full-width"></p-select>
+                </div>
+              }
             </div>
 
             <div class="line-items-section mb-4">
@@ -110,7 +121,12 @@
                     
                     <div class="field">
                       <label>Product *</label>
-                      <p-select formControlName="inventoryItemId" [options]="inventoryItems()" optionLabel="name" optionValue="id" placeholder="Select a product" styleClass="full-width" appendTo="body"></p-select>
+                      <p-select formControlName="inventoryItemId" 
+                                [options]="form.get('type')?.value === 0 ? supplierItems() : inventoryItems()" 
+                                [optionLabel]="form.get('type')?.value === 0 ? 'inventoryItemName' : 'name'" 
+                                [optionValue]="form.get('type')?.value === 0 ? 'inventoryItemId' : 'id'" 
+                                placeholder="Select a product" 
+                                styleClass="full-width" appendTo="body"></p-select>
                     </div>
 
                     <div class="field">

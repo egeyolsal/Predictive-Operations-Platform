@@ -66,3 +66,12 @@ public class ItemSupplierResponseDto
     public decimal Price { get; set; }
     public int LeadTimeDays { get; set; }
 }
+public class SupplierItemResponseDto
+{
+    public int InventoryItemId { get; set; }
+    public string InventoryItemName { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public int CurrentStock { get; set; }
+    public decimal Price { get; set; }
+    public int LeadTimeDays { get; set; }
+}

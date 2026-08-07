@@ -16,6 +16,8 @@ import { InventoryApi } from '../inventory/inventory-api';
 import { InventoryItem } from '../inventory/inventory.models';
 import { CustomerService } from '../../core/services/customer.service';
 import { Customer } from '../../core/models/customer.model';
+import { SupplierService, SupplierItemResponseDto } from '../../core/services/supplier.service';
+import { Supplier } from '../../core/models/supplier.model';
 import { Auth } from '../../core/auth/auth';
 
 @Component({
@@ -34,6 +36,7 @@ export class InvoicesComponent implements OnInit {
   private readonly invoiceService = inject(InvoiceService);
   private readonly inventoryApi = inject(InventoryApi);
   private readonly customerService = inject(CustomerService);
+  private readonly supplierService = inject(SupplierService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   readonly auth = inject(Auth);
@@ -41,6 +44,8 @@ export class InvoicesComponent implements OnInit {
   readonly invoices = signal<InvoiceResponseDto[]>([]);
   readonly inventoryItems = signal<InventoryItem[]>([]);
   readonly customers = signal<Customer[]>([]);
+  readonly suppliers = signal<Supplier[]>([]);
+  readonly supplierItems = signal<SupplierItemResponseDto[]>([]);
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
 
@@ -55,6 +60,7 @@ export class InvoicesComponent implements OnInit {
     invoiceDate: [new Date(), Validators.required],
     type: [InvoiceType.Outbound, Validators.required],
     customerId: [null as number | null],
+    supplierId: [null as number | null],
     lineItems: this.fb.array([])
   });
 
@@ -65,6 +71,24 @@ export class InvoicesComponent implements OnInit {
   ngOnInit(): void {
     this.loadData();
     this.addLineItem(); // Start with one empty line item
+
+    // Listen to Type changes
+    this.form.get('type')?.valueChanges.subscribe(() => this.onTypeChange());
+    // Listen to Supplier changes
+    this.form.get('supplierId')?.valueChanges.subscribe(supplierId => {
+      if (supplierId) {
+        this.supplierService.getSupplierItems(supplierId).subscribe(data => {
+          this.supplierItems.set(data);
+          // Auto-fill price for existing line items if they match
+          this.lineItems.controls.forEach(ctrl => {
+            const itemId = ctrl.get('inventoryItemId')?.value;
+            if (itemId) this.updateLineItemPrice(ctrl as FormGroup, itemId);
+          });
+        });
+      } else {
+        this.supplierItems.set([]);
+      }
+    });
   }
 
   loadData(): void {
@@ -79,14 +103,32 @@ export class InvoicesComponent implements OnInit {
 
     this.inventoryApi.getAll().subscribe(data => this.inventoryItems.set(data));
     this.customerService.getCustomers().subscribe(data => this.customers.set(data));
+    this.supplierService.getSuppliers().subscribe(data => this.suppliers.set(data));
   }
 
   createLineItem(): FormGroup {
-    return this.fb.group({
+    const group = this.fb.group({
       inventoryItemId: [null, Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
-      unitPrice: [0, [Validators.required, Validators.min(0)]]
+      unitPrice: [{value: 0, disabled: this.form.get('type')?.value === InvoiceType.Inbound}, [Validators.required, Validators.min(0)]]
     });
+
+    group.get('inventoryItemId')?.valueChanges.subscribe(itemId => {
+      if (this.form.get('type')?.value === InvoiceType.Inbound) {
+        this.updateLineItemPrice(group, itemId);
+      }
+    });
+
+    return group;
+  }
+
+  updateLineItemPrice(group: FormGroup, itemId: number | null): void {
+    if (!itemId) return;
+    const sItems = this.supplierItems();
+    const found = sItems.find(i => i.inventoryItemId === itemId);
+    if (found) {
+      group.get('unitPrice')?.setValue(found.price);
+    }
   }
 
   addLineItem(): void {
@@ -102,14 +144,36 @@ export class InvoicesComponent implements OnInit {
   onTypeChange(): void {
     const type = this.form.get('type')?.value;
     const customerCtrl = this.form.get('customerId');
+    const supplierCtrl = this.form.get('supplierId');
     
     if (type === InvoiceType.InternalConsumption) {
       customerCtrl?.clearValidators();
       customerCtrl?.setValue(null);
+      supplierCtrl?.clearValidators();
+      supplierCtrl?.setValue(null);
+    } else if (type === InvoiceType.Inbound) {
+      customerCtrl?.clearValidators();
+      customerCtrl?.setValue(null);
+      supplierCtrl?.setValidators([Validators.required]);
     } else {
+      // Outbound
+      supplierCtrl?.clearValidators();
+      supplierCtrl?.setValue(null);
       customerCtrl?.setValidators([Validators.required]);
     }
+    
     customerCtrl?.updateValueAndValidity();
+    supplierCtrl?.updateValueAndValidity();
+
+    // Toggle unitPrice disable state
+    this.lineItems.controls.forEach(ctrl => {
+      const unitPriceCtrl = ctrl.get('unitPrice');
+      if (type === InvoiceType.Inbound) {
+        unitPriceCtrl?.disable();
+      } else {
+        unitPriceCtrl?.enable();
+      }
+    });
   }
 
   onSubmit(): void {
@@ -126,6 +190,7 @@ export class InvoicesComponent implements OnInit {
       invoiceDate: (rawVal.invoiceDate as Date).toISOString(),
       type: rawVal.type,
       customerId: rawVal.customerId,
+      supplierId: rawVal.supplierId,
       lineItems: rawVal.lineItems.map((li: any) => ({
         inventoryItemId: li.inventoryItemId,
         quantity: li.quantity,
@@ -142,7 +207,8 @@ export class InvoicesComponent implements OnInit {
           invoiceNumber: '',
           invoiceDate: new Date(),
           type: InvoiceType.Outbound,
-          customerId: null
+          customerId: null,
+          supplierId: null
         });
         this.lineItems.clear();
         this.addLineItem();
