@@ -72,6 +72,7 @@ public class SupplierController : ControllerBase
         if (existing != null)
         {
             existing.Price = dto.Price;
+            existing.LeadTimeDays = dto.LeadTimeDays;
             _unitOfWork.ItemSuppliers.Update(existing);
         }
         else
@@ -80,13 +81,14 @@ public class SupplierController : ControllerBase
             {
                 SupplierId = id,
                 InventoryItemId = dto.InventoryItemId,
-                Price = dto.Price
+                Price = dto.Price,
+                LeadTimeDays = dto.LeadTimeDays
             };
             await _unitOfWork.ItemSuppliers.AddAsync(assignment);
         }
 
         await _unitOfWork.SaveChangesAsync();
-        return Ok("Item assigned to supplier successfully.");
+        return NoContent();
     }
 
     [HttpPut("{id}")]

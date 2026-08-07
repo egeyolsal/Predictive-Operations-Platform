@@ -12,3 +12,16 @@ export interface SupplierCreateDto {
   phone?: string;
   email?: string;
 }
+
+export interface ItemSupplierAssignDto {
+  inventoryItemId: number;
+  price: number;
+  leadTimeDays: number;
+}
+
+export interface ItemSupplierResponseDto {
+  supplierId: number;
+  supplierName: string;
+  price: number;
+  leadTimeDays: number;
+}

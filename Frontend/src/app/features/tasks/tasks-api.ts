@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { TaskItem, TaskCreateDto, TaskUpdateDto, User, Category } from './tasks.models';
+import { TaskItem, TaskCreateDto, TaskUpdateDto, User, Category, TaskMaterialConsumptionDto, TaskMaterialResponseDto } from './tasks.models';
 
 import { API_BASE_URL } from '../../core/config/api-config';
 
@@ -38,5 +38,13 @@ export class TasksApi {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  consumeMaterial(dto: TaskMaterialConsumptionDto): Observable<{ message: string; invoiceNumber: string }> {
+    return this.http.post<{ message: string; invoiceNumber: string }>(`${this.baseUrl}/consume-material`, dto);
+  }
+
+  getTaskMaterials(id: number): Observable<TaskMaterialResponseDto[]> {
+    return this.http.get<TaskMaterialResponseDto[]>(`${this.baseUrl}/${id}/materials`);
   }
 }

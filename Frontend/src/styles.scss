@@ -1,2 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
+
+/* Global form styles */
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.w-full {
+  width: 100% !important;
+}
+
+.full-width {
+  width: 100% !important;
+}

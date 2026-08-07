@@ -7,18 +7,25 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { TextareaModule } from 'primeng/textarea';
+import { TabsModule } from 'primeng/tabs';
+import { TableModule } from 'primeng/table';
+import { MessageService } from 'primeng/api';
+import { ChangeDetectorRef } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { TasksApi } from '../tasks-api';
-import { TaskItem, TaskItemStatus, User, Category } from '../tasks.models';
+import { TaskItem, TaskItemStatus, User, Category, TaskMaterialResponseDto } from '../tasks.models';
 
 @Component({
   selector: 'app-tasks-form',
-  imports: [ReactiveFormsModule, DialogModule, InputTextModule, InputNumberModule, SelectModule, ButtonModule, TextareaModule],
+  imports: [ReactiveFormsModule, DialogModule, InputTextModule, InputNumberModule, SelectModule, ButtonModule, TextareaModule, TabsModule, TableModule, DatePipe],
   templateUrl: './tasks-form.html',
   styleUrl: './tasks-form.scss',
 })
 export class TasksForm implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly tasksApi = inject(TasksApi);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly messageService = inject(MessageService);
 
   readonly visible = input.required<boolean>();
   readonly editingItem = input<TaskItem | null>(null);
@@ -46,6 +53,15 @@ export class TasksForm implements OnInit {
     expectedDurationHours: [1, [Validators.required, Validators.min(0.1)]],
   });
 
+  // Materials State
+  readonly taskMaterials = signal<TaskMaterialResponseDto[]>([]);
+  readonly isMaterialsLoading = signal(false);
+
+  readonly consumeForm = this.fb.nonNullable.group({
+    barcode: ['', [Validators.required]],
+    quantity: [1, [Validators.required, Validators.min(1)]],
+  });
+
   constructor() {
     effect(() => {
       const item = this.editingItem();
@@ -58,6 +74,7 @@ export class TasksForm implements OnInit {
           categoryId: item.categoryId,
           expectedDurationHours: item.expectedDurationHours,
         });
+        this.fetchMaterials(item.id);
       } else {
         this.form.reset({
           title: '',
@@ -67,6 +84,49 @@ export class TasksForm implements OnInit {
           categoryId: null,
           expectedDurationHours: 1,
         });
+        this.taskMaterials.set([]);
+      }
+    });
+  }
+
+  fetchMaterials(taskId: number): void {
+    this.isMaterialsLoading.set(true);
+    this.tasksApi.getTaskMaterials(taskId).subscribe({
+      next: (data) => {
+        this.taskMaterials.set(data);
+        this.isMaterialsLoading.set(false);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isMaterialsLoading.set(false);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onConsumeMaterial(): void {
+    if (this.consumeForm.invalid) {
+      this.consumeForm.markAllAsTouched();
+      return;
+    }
+    
+    const taskId = this.editingItem()?.id;
+    if (!taskId) return;
+
+    const val = this.consumeForm.getRawValue();
+    this.tasksApi.consumeMaterial({
+      taskId,
+      barcode: val.barcode,
+      quantity: val.quantity
+    }).subscribe({
+      next: (res) => {
+        this.fetchMaterials(taskId);
+        this.consumeForm.reset({ barcode: '', quantity: 1 });
+        this.messageService.add({ severity: 'success', summary: 'Consumed', detail: res.message });
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error || 'Failed to consume material' });
       }
     });
   }

@@ -24,3 +24,29 @@
   gap: 0.5rem;
   margin-top: 1.5rem;
 }
+
+.assign-supplier-box {
+  background-color: var(--p-surface-50);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--p-text-color);
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+
+    .field {
+      margin-bottom: 0;
+    }
+  }
+}

@@ -47,6 +47,24 @@ public class InventoryController : ControllerBase
         return Ok(MapToResponseDto(item));
     }
 
+    [HttpGet("{id}/suppliers")]
+    public async Task<ActionResult<IEnumerable<ItemSupplierResponseDto>>> GetSuppliers(int id)
+    {
+        var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(
+            isup => isup.InventoryItemId == id,
+            isup => isup.Supplier!);
+            
+        var dtos = itemSuppliers.Select(isup => new ItemSupplierResponseDto
+        {
+            SupplierId = isup.SupplierId,
+            SupplierName = isup.Supplier?.Name ?? "Unknown",
+            Price = isup.Price,
+            LeadTimeDays = isup.LeadTimeDays
+        });
+
+        return Ok(dtos);
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<InventoryResponseDto>> Create(InventoryCreateDto dto)

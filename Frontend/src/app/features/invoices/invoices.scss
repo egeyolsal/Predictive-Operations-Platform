@@ -1,1 +1,59 @@
-/* Invoices styles */
+.invoices-page {
+  .invoice-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  .line-item-row {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1.5fr auto;
+    gap: 1.5rem;
+    align-items: flex-end;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .line-item-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .field {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .full-width {
+    width: 100% !important;
+  }
+
+  .surface-card {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+}

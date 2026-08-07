@@ -1,1 +1,123 @@
-<p>invoices works!</p>
+<div class="invoices-page p-4">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h1 class="m-0 text-3xl font-semibold text-color">Invoices</h1>
+  </div>
+
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">
+        <i class="pi pi-list mr-2"></i> Invoice History
+      </p-tab>
+      <p-tab value="1">
+        <i class="pi pi-plus mr-2"></i> Create Invoice
+      </p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <!-- History Tab -->
+      <p-tabpanel value="0">
+        <div class="surface-card p-4 shadow-2 border-round">
+          <p-table [value]="invoices()" [loading]="isLoading()" [paginator]="true" [rows]="10">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Customer / Supplier</th>
+                <th>Total Amount</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-inv>
+              <tr>
+                <td><strong>{{ inv.invoiceNumber }}</strong></td>
+                <td>{{ inv.invoiceDate | date:'mediumDate' }}</td>
+                <td>
+                  <span class="p-badge" 
+                        [class.p-badge-success]="inv.type === 'Inbound'"
+                        [class.p-badge-info]="inv.type === 'Outbound'"
+                        [class.p-badge-warning]="inv.type === 'InternalConsumption'">
+                    {{ inv.type }}
+                  </span>
+                </td>
+                <td>{{ inv.customerName || '-' }}</td>
+                <td>{{ inv.totalAmount | currency }}</td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="5" class="text-center p-4">No invoices found.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </p-tabpanel>
+
+      <!-- Create Tab -->
+      <p-tabpanel value="1">
+        <div class="surface-card p-4 shadow-2 border-round">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            
+            <div class="invoice-form-grid">
+              <div class="field">
+                <label for="invoiceNumber">Invoice Number *</label>
+                <input id="invoiceNumber" pInputText formControlName="invoiceNumber" class="full-width" />
+              </div>
+              
+              <div class="field">
+                <label for="invoiceDate">Invoice Date *</label>
+                <p-datepicker id="invoiceDate" formControlName="invoiceDate" [showIcon]="true" styleClass="full-width"></p-datepicker>
+              </div>
+
+              <div class="field">
+                <label for="type">Invoice Type *</label>
+                <p-select id="type" formControlName="type" [options]="invoiceTypes" optionLabel="label" optionValue="value" (onChange)="onTypeChange()" styleClass="full-width"></p-select>
+              </div>
+
+              <div class="field">
+                <label for="customerId">Customer / Supplier</label>
+                <p-select id="customerId" formControlName="customerId" [options]="customers()" optionLabel="name" optionValue="id" placeholder="Select one" [disabled]="form.get('type')?.value === 2" styleClass="full-width"></p-select>
+              </div>
+            </div>
+
+            <div class="line-items-section mb-4">
+              <div class="section-header">
+                <h3 style="margin: 0;">Line Items</h3>
+                <p-button type="button" label="Add Item" icon="pi pi-plus" size="small" (onClick)="addLineItem()"></p-button>
+              </div>
+
+              <div formArrayName="lineItems">
+                @for (item of lineItems.controls; track $index) {
+                  <div [formGroupName]="$index" class="line-item-row">
+                    
+                    <div class="field">
+                      <label>Product *</label>
+                      <p-select formControlName="inventoryItemId" [options]="inventoryItems()" optionLabel="name" optionValue="id" placeholder="Select a product" styleClass="full-width" appendTo="body"></p-select>
+                    </div>
+
+                    <div class="field">
+                      <label>Quantity *</label>
+                      <p-inputNumber formControlName="quantity" [min]="1" styleClass="full-width"></p-inputNumber>
+                    </div>
+
+                    <div class="field">
+                      <label>Unit Price *</label>
+                      <p-inputNumber formControlName="unitPrice" mode="currency" currency="USD" [min]="0" styleClass="full-width"></p-inputNumber>
+                    </div>
+
+                    <div class="field" style="text-align: right;">
+                      <p-button type="button" icon="pi pi-trash" severity="danger" [outlined]="true" (onClick)="removeLineItem($index)" [disabled]="lineItems.length === 1"></p-button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="flex justify-content-end">
+              <p-button type="submit" label="Save Invoice" icon="pi pi-check" [loading]="isSubmitting()"></p-button>
+            </div>
+          </form>
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>

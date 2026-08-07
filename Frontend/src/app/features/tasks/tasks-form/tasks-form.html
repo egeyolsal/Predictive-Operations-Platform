@@ -3,10 +3,18 @@
   (visibleChange)="onHide()"
   [modal]="true"
   [header]="editingItem() ? 'Edit Task' : 'Add Task'"
-  [style]="{ width: '400px' }"
+  [style]="{ width: '700px' }"
   [closable]="true"
   [closeOnEscape]="true"
 >
+<p-tabs value="0">
+  <p-tablist>
+    <p-tab value="0">General Info</p-tab>
+    <p-tab value="1" [disabled]="!editingItem()">Used Materials</p-tab>
+  </p-tablist>
+
+  <p-tabpanels>
+    <p-tabpanel value="0">
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-layout">
     <div class="field">
       <label for="title">Title *</label>
@@ -96,4 +104,50 @@
       ></p-button>
     </div>
   </form>
+  </p-tabpanel>
+
+  <p-tabpanel value="1">
+    @if (editingItem()) {
+      <div class="consume-material-box mb-4 p-3 border-round border-1 surface-border">
+        <h3>Consume Material (Scan Barcode)</h3>
+        <form [formGroup]="consumeForm" (ngSubmit)="onConsumeMaterial()" class="flex flex-wrap gap-3 align-items-end">
+          <div class="field" style="flex: 1; min-width: 200px;">
+            <label for="barcode">Barcode</label>
+            <input id="barcode" type="text" pInputText formControlName="barcode" placeholder="Scan or type barcode" style="width: 100%" />
+          </div>
+          <div class="field" style="width: 120px;">
+            <label for="quantity">Quantity</label>
+            <p-inputNumber id="quantity" formControlName="quantity" [min]="1" styleClass="w-full"></p-inputNumber>
+          </div>
+          <div class="field">
+            <p-button type="submit" label="Consume" icon="pi pi-check" [disabled]="consumeForm.invalid"></p-button>
+          </div>
+        </form>
+      </div>
+
+      <p-table [value]="taskMaterials()" [loading]="isMaterialsLoading()" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Material Name</th>
+            <th>Quantity Used</th>
+            <th>Date</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-mat>
+          <tr>
+            <td>{{ mat.inventoryItemName }}</td>
+            <td>{{ mat.quantityUsed }}</td>
+            <td>{{ mat.transactionDate | date:'short' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3">No materials consumed for this task.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </p-tabpanel>
+</p-tabpanels>
+</p-tabs>
 </p-dialog>

@@ -48,6 +48,23 @@ public class TaskController : ControllerBase
         return Ok(MapToResponseDto(task));
     }
 
+    [HttpGet("{id}/materials")]
+    public async Task<ActionResult<IEnumerable<TaskMaterialResponseDto>>> GetMaterials(int id)
+    {
+        var transactions = await _unitOfWork.InventoryTransactions.FindAsync(
+            it => it.TaskItemId == id,
+            it => it.InventoryItem!);
+
+        return Ok(transactions.Select(it => new TaskMaterialResponseDto
+        {
+            Id = it.Id,
+            InventoryItemId = it.InventoryItemId,
+            InventoryItemName = it.InventoryItem?.Name ?? "Unknown",
+            QuantityUsed = it.QuantityUsed,
+            TransactionDate = it.TransactionDate
+        }));
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<TaskResponseDto>> Create(TaskCreateDto dto)

@@ -46,3 +46,17 @@ export interface Category {
   id: number;
   name: string;
 }
+
+export interface TaskMaterialConsumptionDto {
+  taskId: number;
+  barcode: string;
+  quantity: number;
+}
+
+export interface TaskMaterialResponseDto {
+  id: number;
+  inventoryItemId: number;
+  inventoryItemName: string;
+  quantityUsed: number;
+  transactionDate: string;
+}

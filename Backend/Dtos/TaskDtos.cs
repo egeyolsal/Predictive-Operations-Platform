@@ -68,3 +68,12 @@ public class TaskMaterialConsumptionDto
     [Range(1, int.MaxValue)]
     public int Quantity { get; set; } = 1;
 }
+
+public class TaskMaterialResponseDto
+{
+    public int Id { get; set; }
+    public int InventoryItemId { get; set; }
+    public string InventoryItemName { get; set; } = string.Empty;
+    public int QuantityUsed { get; set; }
+    public DateTime TransactionDate { get; set; }
+}

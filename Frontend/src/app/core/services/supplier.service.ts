@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Supplier, SupplierCreateDto } from '../models/supplier.model';
+import { Supplier, SupplierCreateDto, ItemSupplierAssignDto } from '../models/supplier.model';
 import { API_BASE_URL } from '../config/api-config';
 
 @Injectable({
@@ -26,5 +26,9 @@ export class SupplierService {
 
   deleteSupplier(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  assignItem(supplierId: number, dto: ItemSupplierAssignDto): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${supplierId}/assign-item`, dto);
   }
 }

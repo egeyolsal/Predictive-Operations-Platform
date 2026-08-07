@@ -18,6 +18,23 @@ public class InvoiceController : ControllerBase
         _unitOfWork = unitOfWork;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<InvoiceResponseDto>>> GetAll()
+    {
+        var invoices = await _unitOfWork.Invoices.GetAllAsync();
+        // For a full implementation, we need eager loading.
+        // Doing basic mapping for now.
+        return Ok(invoices.Select(invoice => new InvoiceResponseDto
+        {
+            Id = invoice.Id,
+            InvoiceNumber = invoice.InvoiceNumber,
+            InvoiceDate = invoice.InvoiceDate,
+            Type = invoice.Type.ToString(),
+            CustomerId = invoice.CustomerId,
+            TotalAmount = invoice.TotalAmount
+        }));
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<InvoiceResponseDto>> Create(InvoiceCreateDto dto)

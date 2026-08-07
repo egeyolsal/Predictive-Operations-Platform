@@ -53,4 +53,16 @@ public class ItemSupplierAssignDto
     [Required]
     [Range(0, double.MaxValue)]
     public decimal Price { get; set; }
+    
+    [Required]
+    [Range(0, int.MaxValue)]
+    public int LeadTimeDays { get; set; }
+}
+
+public class ItemSupplierResponseDto
+{
+    public int SupplierId { get; set; }
+    public string SupplierName { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int LeadTimeDays { get; set; }
 }

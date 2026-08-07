@@ -2,9 +2,17 @@
   [visible]="visible()"
   (visibleChange)="onHide()"
   [modal]="true"
-  [style]="{ width: '450px' }"
+  [style]="{ width: '700px' }"
   [header]="editingItem() ? 'Edit Inventory Item' : 'Add Inventory Item'"
 >
+<p-tabs value="0">
+  <p-tablist>
+    <p-tab value="0">General Info</p-tab>
+    <p-tab value="1" [disabled]="!editingItem()">Suppliers & Pricing</p-tab>
+  </p-tablist>
+
+  <p-tabpanels>
+    <p-tabpanel value="0">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="field">
       <label for="name">Name</label>
@@ -44,9 +52,59 @@
       }
     </div>
 
-    <div class="form-actions">
+    <div class="form-actions mt-4">
       <p-button label="Cancel" severity="secondary" type="button" (onClick)="onHide()" />
       <p-button label="Save" type="submit" [loading]="isSubmitting()" />
     </div>
   </form>
+  </p-tabpanel>
+
+  <p-tabpanel value="1">
+    @if (editingItem()) {
+      <div class="assign-supplier-box mb-4 p-3 border-round border-1 surface-border">
+        <h3>Assign Supplier</h3>
+        <form [formGroup]="assignForm" (ngSubmit)="onAssignSupplier()" class="form-row">
+          <div class="field" style="flex: 1; min-width: 150px;">
+            <label for="supplierId">Supplier</label>
+            <p-select id="supplierId" formControlName="supplierId" [options]="allSuppliers()" optionLabel="name" optionValue="id" placeholder="Select supplier" styleClass="full-width"></p-select>
+          </div>
+          <div class="field" style="width: 120px;">
+            <label for="price">Unit Price</label>
+            <p-inputNumber id="price" formControlName="price" [min]="0" mode="currency" currency="USD" styleClass="full-width"></p-inputNumber>
+          </div>
+          <div class="field" style="width: 120px;">
+            <label for="leadTimeDays">Lead Time</label>
+            <p-inputNumber id="leadTimeDays" formControlName="leadTimeDays" [min]="0" suffix=" days" styleClass="full-width"></p-inputNumber>
+          </div>
+          <div class="field">
+            <p-button type="submit" label="Assign" icon="pi pi-check" [disabled]="assignForm.invalid"></p-button>
+          </div>
+        </form>
+      </div>
+
+      <p-table [value]="itemSuppliers()" [loading]="isSuppliersLoading()" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Supplier</th>
+            <th>Unit Price</th>
+            <th>Lead Time</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-isup>
+          <tr>
+            <td>{{ isup.supplierName }}</td>
+            <td>{{ isup.price | currency }}</td>
+            <td>{{ isup.leadTimeDays }} days</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3">No suppliers assigned to this item.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </p-tabpanel>
+</p-tabpanels>
+</p-tabs>
 </p-dialog>
