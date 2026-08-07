@@ -88,4 +88,35 @@ public class SupplierController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
         return Ok("Item assigned to supplier successfully.");
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, SupplierUpdateDto dto)
+    {
+        var existingSupplier = await _unitOfWork.Suppliers.GetByIdAsync(id);
+        if (existingSupplier == null)
+            return NotFound();
+
+        existingSupplier.Name = dto.Name;
+        existingSupplier.ContactName = dto.ContactName;
+        existingSupplier.Phone = dto.Phone;
+        existingSupplier.Email = dto.Email;
+
+        _unitOfWork.Suppliers.Update(existingSupplier);
+        await _unitOfWork.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var supplier = await _unitOfWork.Suppliers.GetByIdAsync(id);
+        if (supplier == null)
+            return NotFound();
+
+        _unitOfWork.Suppliers.Remove(supplier);
+        await _unitOfWork.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

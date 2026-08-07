@@ -22,6 +22,18 @@
           <i class="pi pi-list-check"></i> Tasks
         </a>
       </li>
+      <li>
+        <a routerLink="/customers" routerLinkActive="active">
+          <i class="pi pi-users"></i> Customers
+        </a>
+      </li>
+      @if (isAdmin()) {
+        <li>
+          <a routerLink="/suppliers" routerLinkActive="active">
+            <i class="pi pi-truck"></i> Suppliers
+          </a>
+        </li>
+      }
     </ul>
   </div>
 </nav>

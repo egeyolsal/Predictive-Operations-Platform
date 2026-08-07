@@ -1,25 +1,27 @@
 <div class="card">
-    <div class="flex justify-content-between align-items-center mb-4">
-        <h2>Tedarikçiler (Suppliers)</h2>
-        <p-button label="Yeni Tedarikçi Ekle" icon="pi pi-plus" (onClick)="showDialogToAdd()"></p-button>
+    <div class="page-header">
+        <h2>Suppliers</h2>
+        @if (isAdmin()) {
+          <p-button label="Add Supplier" icon="pi pi-plus" (onClick)="showDialogToAdd()"></p-button>
+        }
     </div>
 
-    <p-table [value]="suppliers" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }"
+    <p-table [value]="suppliers()" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }"
              [globalFilterFields]="['name', 'contactName', 'email', 'phone']" #dt>
         <ng-template pTemplate="caption">
-            <div class="flex">
-                <span class="p-input-icon-left ml-auto">
-                    <i class="pi pi-search"></i>
-                    <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Ara..." />
-                </span>
+            <div class="table-header">
+                <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Search keyword..." />
             </div>
         </ng-template>
         <ng-template pTemplate="header">
             <tr>
-                <th pSortableColumn="name">Firma Adı <p-sortIcon field="name"></p-sortIcon></th>
-                <th pSortableColumn="contactName">İlgili Kişi <p-sortIcon field="contactName"></p-sortIcon></th>
-                <th pSortableColumn="phone">Telefon <p-sortIcon field="phone"></p-sortIcon></th>
-                <th pSortableColumn="email">E-posta <p-sortIcon field="email"></p-sortIcon></th>
+                <th pSortableColumn="name">Company Name <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="contactName">Contact Name <p-sortIcon field="contactName"></p-sortIcon></th>
+                <th pSortableColumn="phone">Phone <p-sortIcon field="phone"></p-sortIcon></th>
+                <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+                @if (isAdmin()) {
+                    <th class="actions-column">Actions</th>
+                }
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-supplier>
@@ -28,40 +30,48 @@
                 <td>{{ supplier.contactName }}</td>
                 <td>{{ supplier.phone }}</td>
                 <td>{{ supplier.email }}</td>
+                @if (isAdmin()) {
+                    <td>
+                        <div class="action-buttons">
+                            <p-button icon="pi pi-pencil" severity="info" [text]="true" [rounded]="true" (click)="editSupplier(supplier)"></p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (click)="deleteSupplier(supplier)"></p-button>
+                        </div>
+                    </td>
+                }
             </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="4">Tedarikçi bulunamadı.</td>
+                <td [attr.colspan]="isAdmin() ? 5 : 4">No suppliers found.</td>
             </tr>
         </ng-template>
     </p-table>
 </div>
 
-<p-dialog header="Tedarikçi Ekle" [(visible)]="displayDialog" [modal]="true" [style]="{ width: '450px' }" [draggable]="false" [resizable]="false">
-    <form [formGroup]="supplierForm" (ngSubmit)="saveSupplier()" class="p-fluid">
-        <div class="field mb-3">
-            <label for="name">Firma Adı *</label>
+<p-dialog header="Add Supplier" [visible]="displayDialog()" (visibleChange)="displayDialog.set($event)" [modal]="true" [style]="{ width: '450px' }" [draggable]="false" [resizable]="false">
+    <form [formGroup]="supplierForm" (ngSubmit)="saveSupplier()" class="form-layout">
+        <div class="field">
+            <label for="name">Company Name *</label>
             <input type="text" pInputText id="name" formControlName="name" autofocus />
-            <small class="p-error" *ngIf="supplierForm.get('name')?.invalid && supplierForm.get('name')?.touched">Firma adı zorunludur.</small>
+            <small class="p-error" *ngIf="supplierForm.get('name')?.invalid && supplierForm.get('name')?.touched">Company name is required.</small>
         </div>
-        <div class="field mb-3">
-            <label for="contactName">İlgili Kişi</label>
+        <div class="field">
+            <label for="contactName">Contact Name</label>
             <input type="text" pInputText id="contactName" formControlName="contactName" />
         </div>
-        <div class="field mb-3">
-            <label for="phone">Telefon</label>
+        <div class="field">
+            <label for="phone">Phone</label>
             <input type="text" pInputText id="phone" formControlName="phone" />
         </div>
-        <div class="field mb-4">
-            <label for="email">E-posta</label>
+        <div class="field">
+            <label for="email">Email</label>
             <input type="email" pInputText id="email" formControlName="email" />
-            <small class="p-error" *ngIf="supplierForm.get('email')?.errors?.['email'] && supplierForm.get('email')?.touched">Geçerli bir e-posta giriniz.</small>
+            <small class="p-error" *ngIf="supplierForm.get('email')?.errors?.['email'] && supplierForm.get('email')?.touched">Please enter a valid email.</small>
         </div>
 
-        <div class="flex justify-content-end gap-2">
-            <p-button label="İptal" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="displayDialog = false"></p-button>
-            <p-button label="Kaydet" icon="pi pi-check" type="submit" [disabled]="supplierForm.invalid"></p-button>
+        <div class="actions">
+            <p-button label="Cancel" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="displayDialog.set(false)"></p-button>
+            <p-button label="Save" icon="pi pi-check" type="submit" [disabled]="supplierForm.invalid"></p-button>
         </div>
     </form>
 </p-dialog>

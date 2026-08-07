@@ -20,5 +20,11 @@ export class SupplierService {
     return this.http.post<Supplier>(this.apiUrl, supplier);
   }
 
-  // Future endpoints (Update, Delete) can go here
+  updateSupplier(id: number, supplier: SupplierCreateDto): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}`, supplier);
+  }
+
+  deleteSupplier(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

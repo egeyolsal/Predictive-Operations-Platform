@@ -19,6 +19,23 @@ public class SupplierCreateDto
     public string? Email { get; set; }
 }
 
+public class SupplierUpdateDto
+{
+    [Required]
+    [MaxLength(150)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string? ContactName { get; set; }
+
+    [MaxLength(20)]
+    public string? Phone { get; set; }
+
+    [EmailAddress]
+    [MaxLength(100)]
+    public string? Email { get; set; }
+}
+
 public class SupplierResponseDto
 {
     public int Id { get; set; }
