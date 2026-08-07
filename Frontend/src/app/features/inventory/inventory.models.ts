@@ -1,7 +1,9 @@
 export interface InventoryItem {
   id: number;
   name: string;
-  category: string;
+  categoryId: number;
+  categoryName: string;
+  barcode?: string;
   currentStock: number;
   criticalThreshold: number;
   isBelowCriticalThreshold: boolean;
@@ -9,14 +11,16 @@ export interface InventoryItem {
 
 export interface InventoryCreateRequest {
   name: string;
-  category: string;
+  categoryId: number;
+  barcode?: string;
   currentStock: number;
   criticalThreshold: number;
 }
 
 export interface InventoryUpdateRequest {
   name: string;
-  category: string;
+  categoryId: number;
+  barcode?: string;
   currentStock: number;
   criticalThreshold: number;
 }

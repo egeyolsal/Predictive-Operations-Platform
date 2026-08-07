@@ -22,7 +22,7 @@ public static class DataSeeder
         var categories = await SeedCategoriesAsync(context);
         var suppliers = await SeedSuppliersAsync(context);
         var customers = await SeedCustomersAsync(context);
-        var inventoryItems = await SeedInventoryItemsAsync(context, suppliers);
+        var inventoryItems = await SeedInventoryItemsAsync(context, suppliers, categories);
         var tasks = await SeedTasksAsync(context, categories, users);
         await SeedInventoryTransactionsAsync(context, tasks, inventoryItems);
         await SeedInvoicesAsync(context, inventoryItems, customers);
@@ -84,15 +84,15 @@ public static class DataSeeder
         return custs;
     }
 
-    private static async Task<List<InventoryItem>> SeedInventoryItemsAsync(ApplicationDbContext context, List<Supplier> suppliers)
+    private static async Task<List<InventoryItem>> SeedInventoryItemsAsync(ApplicationDbContext context, List<Supplier> suppliers, List<Category> categories)
     {
         var items = new List<InventoryItem>
         {
-            new InventoryItem { Name = "Endüstriyel Rulman (SKF)", Category = "Mekanik", Barcode = "B001", CurrentStock = 120, CriticalThreshold = 20 },
-            new InventoryItem { Name = "10mm Çelik Cıvata", Category = "Sarf", Barcode = "B002", CurrentStock = 1500, CriticalThreshold = 200 },
-            new InventoryItem { Name = "3x2.5 NYM Kablo (100m)", Category = "Elektrik", Barcode = "B003", CurrentStock = 40, CriticalThreshold = 10 },
-            new InventoryItem { Name = "Motor Yağı 5W-30 (Varil)", Category = "Sarf", Barcode = "B004", CurrentStock = 15, CriticalThreshold = 4 },
-            new InventoryItem { Name = "30mA Kaçak Akım Rölesi", Category = "Elektrik", Barcode = "B005", CurrentStock = 30, CriticalThreshold = 5 },
+            new InventoryItem { Name = "Endüstriyel Rulman (SKF)", CategoryId = categories[0].Id, Barcode = "B001", CurrentStock = 120, CriticalThreshold = 20 },
+            new InventoryItem { Name = "10mm Çelik Cıvata", CategoryId = categories[2].Id, Barcode = "B002", CurrentStock = 1500, CriticalThreshold = 200 },
+            new InventoryItem { Name = "3x2.5 NYM Kablo (100m)", CategoryId = categories[1].Id, Barcode = "B003", CurrentStock = 40, CriticalThreshold = 10 },
+            new InventoryItem { Name = "Motor Yağı 5W-30 (Varil)", CategoryId = categories[2].Id, Barcode = "B004", CurrentStock = 15, CriticalThreshold = 4 },
+            new InventoryItem { Name = "30mA Kaçak Akım Rölesi", CategoryId = categories[1].Id, Barcode = "B005", CurrentStock = 30, CriticalThreshold = 5 },
         };
         await context.InventoryItems.AddRangeAsync(items);
         await context.SaveChangesAsync();

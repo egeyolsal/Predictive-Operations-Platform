@@ -6,7 +6,8 @@ public class InventoryItem
 
     public string Name { get; set; } = string.Empty;
 
-    public string Category { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
 
     public string? Barcode { get; set; }
 

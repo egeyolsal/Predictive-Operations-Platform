@@ -14,6 +14,8 @@ import { InventoryApi } from '../inventory-api';
 import { InventoryItem } from '../inventory.models';
 import { SupplierService } from '../../../core/services/supplier.service';
 import { Supplier, ItemSupplierResponseDto, ItemSupplierAssignDto } from '../../../core/models/supplier.model';
+import { CategoriesApi } from '../../categories/categories-api';
+import { CategoryItem } from '../../categories/categories.models';
 
 @Component({
   selector: 'app-inventory-form',
@@ -24,6 +26,7 @@ import { Supplier, ItemSupplierResponseDto, ItemSupplierAssignDto } from '../../
 export class InventoryForm {
   private readonly fb = inject(FormBuilder);
   private readonly inventoryApi = inject(InventoryApi);
+  private readonly categoriesApi = inject(CategoriesApi);
   private readonly supplierService = inject(SupplierService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly messageService = inject(MessageService);
@@ -41,11 +44,12 @@ export class InventoryForm {
   readonly allSuppliers = signal<Supplier[]>([]);
   readonly isSuppliersLoading = signal(false);
 
-  readonly categoryOptions = ['Bakım', 'Üretim', 'Lojistik', 'Kalite Kontrol', 'Diğer'];
+  readonly categoryOptions = signal<CategoryItem[]>([]);
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
-    category: ['', [Validators.required, Validators.maxLength(50)]],
+    categoryId: [0, [Validators.required, Validators.min(1)]],
+    barcode: ['', [Validators.maxLength(100)]],
     currentStock: [0, [Validators.required, Validators.min(0)]],
     criticalThreshold: [0, [Validators.required, Validators.min(0)]],
   });
@@ -62,15 +66,25 @@ export class InventoryForm {
       if (item) {
         this.form.patchValue({
           name: item.name,
-          category: item.category,
+          categoryId: item.categoryId,
+          barcode: item.barcode || '',
           currentStock: item.currentStock,
           criticalThreshold: item.criticalThreshold,
         });
         this.fetchSuppliers(item.id);
         this.fetchAllSuppliers();
       } else {
-        this.form.reset({ name: '', category: '', currentStock: 0, criticalThreshold: 0 });
+        this.form.reset({ name: '', categoryId: 0, barcode: '', currentStock: 0, criticalThreshold: 0 });
         this.itemSuppliers.set([]);
+      }
+    });
+    this.fetchCategories();
+  }
+
+  fetchCategories(): void {
+    this.categoriesApi.getAll().subscribe({
+      next: (data) => {
+        this.categoryOptions.set(data);
       }
     });
   }

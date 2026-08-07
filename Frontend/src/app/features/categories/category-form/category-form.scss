@@ -1,0 +1,27 @@
+.field {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.error-text {
+  color: var(--red-500);
+  margin-top: 0.25rem;
+  display: block;
+  font-size: 0.875rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}

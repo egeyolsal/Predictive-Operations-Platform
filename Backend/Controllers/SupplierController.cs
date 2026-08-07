@@ -46,7 +46,7 @@ public class SupplierController : ControllerBase
         {
             InventoryItemId = isup.InventoryItemId,
             InventoryItemName = isup.InventoryItem?.Name ?? "Unknown",
-            Category = isup.InventoryItem?.Category ?? "Unknown",
+            Category = isup.InventoryItem?.Category?.Name ?? "Unknown",
             CurrentStock = isup.InventoryItem?.CurrentStock ?? 0,
             Price = isup.Price,
             LeadTimeDays = isup.LeadTimeDays

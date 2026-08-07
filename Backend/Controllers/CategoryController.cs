@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskInventoryApi.Models;
 using TaskInventoryApi.Dtos;
 using TaskInventoryApi.Repositories;
 
@@ -18,13 +19,67 @@ public class CategoryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAll()
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetAll()
     {
         var categories = await _unitOfWork.Categories.GetAllAsync();
-        return Ok(categories.Select(c => new CategoryDto
+        return Ok(categories.Select(c => new CategoryResponseDto
         {
             Id = c.Id,
-            Name = c.Name
+            Name = c.Name,
+            Description = c.Description
         }));
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<ActionResult<CategoryResponseDto>> Create(CategoryCreateDto dto)
+    {
+        var category = new Category
+        {
+            Name = dto.Name,
+            Description = dto.Description
+        };
+
+        await _unitOfWork.Categories.AddAsync(category);
+        await _unitOfWork.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetAll), new { id = category.Id }, new CategoryResponseDto
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Description = category.Description
+        });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, CategoryUpdateDto dto)
+    {
+        var existing = await _unitOfWork.Categories.GetByIdAsync(id);
+        if (existing == null)
+            return NotFound();
+
+        existing.Name = dto.Name;
+        existing.Description = dto.Description;
+
+        _unitOfWork.Categories.Update(existing);
+        await _unitOfWork.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var existing = await _unitOfWork.Categories.GetByIdAsync(id);
+        if (existing == null)
+            return NotFound();
+
+        _unitOfWork.Categories.Remove(existing);
+        await _unitOfWork.SaveChangesAsync();
+
+        return NoContent();
     }
 }

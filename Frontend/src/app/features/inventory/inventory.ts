@@ -41,7 +41,8 @@ export class Inventory implements OnInit {
     
     return this.items().filter((item) => {
       const name = (item.name || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
-      return name.startsWith(lowerTerm);
+      const cat = (item.categoryName || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+      return name.startsWith(lowerTerm) || cat.startsWith(lowerTerm) || (item.barcode && item.barcode.toLowerCase().includes(lowerTerm));
     });
   });
 

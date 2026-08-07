@@ -17,6 +17,13 @@
           <i class="pi pi-box"></i> Inventory
         </a>
       </li>
+      @if (canViewCategories()) {
+        <li>
+          <a routerLink="/categories" routerLinkActive="active">
+            <i class="pi pi-tags"></i> Categories
+          </a>
+        </li>
+      }
       <li>
         <a routerLink="/tasks" routerLinkActive="active">
           <i class="pi pi-list-check"></i> Tasks

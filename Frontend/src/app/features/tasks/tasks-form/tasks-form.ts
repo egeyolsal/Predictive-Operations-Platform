@@ -1,4 +1,4 @@
-import { Component, inject, input, output, effect, signal, OnInit } from '@angular/core';
+import { Component, inject, input, output, effect, signal, OnInit, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { DialogModule } from 'primeng/dialog';
@@ -64,28 +64,33 @@ export class TasksForm implements OnInit {
 
   constructor() {
     effect(() => {
-      const item = this.editingItem();
-      if (item) {
-        this.form.patchValue({
-          title: item.title,
-          description: item.description || '',
-          status: item.status,
-          assignedUserId: item.assignedUserId,
-          categoryId: item.categoryId,
-          expectedDurationHours: item.expectedDurationHours,
-        });
-        this.fetchMaterials(item.id);
-      } else {
-        this.form.reset({
-          title: '',
-          description: '',
-          status: TaskItemStatus.ToDo,
-          assignedUserId: null,
-          categoryId: null,
-          expectedDurationHours: 1,
-        });
-        this.taskMaterials.set([]);
-      }
+      const isVisible = this.visible();
+      untracked(() => {
+        if (isVisible) {
+          const item = this.editingItem();
+          if (item) {
+            this.form.patchValue({
+              title: item.title,
+              description: item.description || '',
+              status: item.status,
+              assignedUserId: item.assignedUserId,
+              categoryId: item.categoryId,
+              expectedDurationHours: item.expectedDurationHours,
+            });
+            this.fetchMaterials(item.id);
+          } else {
+            this.form.reset({
+              title: '',
+              description: '',
+              status: TaskItemStatus.ToDo,
+              assignedUserId: null,
+              categoryId: null,
+              expectedDurationHours: 1,
+            });
+            this.taskMaterials.set([]);
+          }
+        }
+      });
     });
   }
 
@@ -194,8 +199,11 @@ export class TasksForm implements OnInit {
         this.visibleChange.emit(false);
         this.saved.emit();
       },
-      error: () => {
+      error: (err) => {
         this.isSubmitting.set(false);
+        console.error(err);
+        const errMsg = typeof err.error === 'string' ? err.error : (err.error?.message || err.error?.title || err.message || 'Failed to save task');
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: errMsg });
       },
     });
   }

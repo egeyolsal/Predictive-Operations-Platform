@@ -39,6 +39,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/inventory/inventory').then(m => m.Inventory)
       },
       {
+        path: 'categories',
+        loadComponent: () => import('./features/categories/categories').then(m => m.CategoriesComponent)
+      },
+      {
         path: 'suppliers',
         canActivate: [adminGuard],
         loadComponent: () => import('./features/suppliers/suppliers').then(m => m.SuppliersComponent)

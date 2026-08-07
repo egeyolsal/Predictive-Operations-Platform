@@ -21,19 +21,29 @@
         <small class="error-text">Name is required (max 100 characters).</small>
       }
     </div>
+
+    <div class="field">
+      <label for="barcode">Barcode</label>
+      <input id="barcode" type="text" pInputText formControlName="barcode" class="full-width" />
+      @if (form.controls.barcode.invalid && form.controls.barcode.touched) {
+        <small class="error-text">Barcode cannot exceed 100 characters.</small>
+      }
+    </div>
     
     <div class="field">
-        <label for="category">Category</label>
+        <label for="categoryId">Category</label>
         <p-select
-            id="category"
-            formControlName="category"
-            [options]="categoryOptions"
+            id="categoryId"
+            formControlName="categoryId"
+            [options]="categoryOptions()"
+            optionLabel="name"
+            optionValue="id"
             placeholder="Select a category"
             styleClass="full-width"
-    />
-    @if (form.controls.category.invalid && form.controls.category.touched) {
-        <small class="error-text">Category is required.</small>
-    }
+        />
+        @if (form.controls.categoryId.invalid && form.controls.categoryId.touched) {
+            <small class="error-text">Category is required.</small>
+        }
     </div>
 
     <div class="field">

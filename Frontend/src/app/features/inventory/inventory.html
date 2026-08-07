@@ -28,7 +28,7 @@
   <ng-template pTemplate="header">
     <tr>
       <th pSortableColumn="name">Name <p-sortIcon field="name" /></th>
-      <th pSortableColumn="category">Category <p-sortIcon field="category" /></th>
+      <th pSortableColumn="categoryName">Category <p-sortIcon field="categoryName" /></th>
       <th pSortableColumn="barcode">Barcode <p-sortIcon field="barcode" /></th>
       <th pSortableColumn="currentStock">Current Stock <p-sortIcon field="currentStock" /></th>
       <th pSortableColumn="criticalThreshold">Critical Threshold <p-sortIcon field="criticalThreshold" /></th>
@@ -42,7 +42,7 @@
   <ng-template pTemplate="body" let-item>
     <tr>
       <td>{{ item.name }}</td>
-      <td>{{ item.category }}</td>
+      <td>{{ item.categoryName }}</td>
       <td>
         @if (item.barcode) {
           <span class="font-mono text-sm bg-gray-100 px-2 py-1 border-round">{{ item.barcode }}</span>

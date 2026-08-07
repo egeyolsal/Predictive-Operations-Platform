@@ -9,8 +9,7 @@ public class InventoryCreateDto
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(50)]
-    public string Category { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
 
     [MaxLength(100)]
     public string? Barcode { get; set; }
@@ -29,8 +28,7 @@ public class InventoryUpdateDto
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(50)]
-    public string Category { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
 
     [MaxLength(100)]
     public string? Barcode { get; set; }
@@ -46,7 +44,8 @@ public class InventoryResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
     public string? Barcode { get; set; }
     public int CurrentStock { get; set; }
     public int CriticalThreshold { get; set; }

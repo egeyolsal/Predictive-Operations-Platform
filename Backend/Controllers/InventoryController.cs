@@ -21,14 +21,15 @@ public class InventoryController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<InventoryResponseDto>>> GetAll()
     {
-        var items = await _unitOfWork.InventoryItems.GetAllAsync();
+        var items = await _unitOfWork.InventoryItems.FindAsync(i => true, i => i.Category!);
         return Ok(items.Select(MapToResponseDto));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<InventoryResponseDto>> GetById(int id)
     {
-        var item = await _unitOfWork.InventoryItems.GetByIdAsync(id);
+        var items = await _unitOfWork.InventoryItems.FindAsync(i => i.Id == id, i => i.Category!);
+        var item = items.FirstOrDefault();
         if (item == null)
             return NotFound();
 
@@ -38,7 +39,7 @@ public class InventoryController : ControllerBase
     [HttpGet("by-barcode/{barcode}")]
     public async Task<ActionResult<InventoryResponseDto>> GetByBarcode(string barcode)
     {
-        var items = await _unitOfWork.InventoryItems.FindAsync(i => i.Barcode == barcode);
+        var items = await _unitOfWork.InventoryItems.FindAsync(i => i.Barcode == barcode, i => i.Category!);
         var item = items.FirstOrDefault();
         
         if (item == null)
@@ -69,10 +70,14 @@ public class InventoryController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<InventoryResponseDto>> Create(InventoryCreateDto dto)
     {
+        var categoryExists = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
+        if (categoryExists == null)
+            return BadRequest($"Category with id {dto.CategoryId} does not exist.");
+
         var item = new InventoryItem
         {
             Name = dto.Name,
-            Category = dto.Category,
+            CategoryId = dto.CategoryId,
             Barcode = dto.Barcode,
             CurrentStock = dto.CurrentStock,
             CriticalThreshold = dto.CriticalThreshold
@@ -92,8 +97,12 @@ public class InventoryController : ControllerBase
         if (existingItem == null)
             return NotFound();
 
+        var categoryExists = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
+        if (categoryExists == null)
+            return BadRequest($"Category with id {dto.CategoryId} does not exist.");
+
         existingItem.Name = dto.Name;
-        existingItem.Category = dto.Category;
+        existingItem.CategoryId = dto.CategoryId;
         existingItem.Barcode = dto.Barcode;
         existingItem.CurrentStock = dto.CurrentStock;
         existingItem.CriticalThreshold = dto.CriticalThreshold;
@@ -122,7 +131,8 @@ public class InventoryController : ControllerBase
     {
         Id = item.Id,
         Name = item.Name,
-        Category = item.Category,
+        CategoryId = item.CategoryId,
+        CategoryName = item.Category?.Name ?? "Unknown",
         Barcode = item.Barcode,
         CurrentStock = item.CurrentStock,
         CriticalThreshold = item.CriticalThreshold,

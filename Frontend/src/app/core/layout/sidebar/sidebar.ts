@@ -11,4 +11,5 @@ import { Auth } from '../../auth/auth';
 export class Sidebar {
   private readonly auth = inject(Auth);
   readonly isAdmin = computed(() => this.auth.role() === 'Admin');
+  readonly canViewCategories = computed(() => this.auth.role() === 'Admin' || this.auth.role() === 'Analyst');
 }
