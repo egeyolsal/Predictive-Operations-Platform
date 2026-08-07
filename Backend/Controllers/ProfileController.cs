@@ -38,7 +38,8 @@ public class ProfileController : ControllerBase
             Username = user.Username,
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-            Role = user.Role.ToString()
+            Role = user.Role.ToString(),
+            ProfilePictureUrl = user.ProfilePictureUrl
         });
     }
 
@@ -98,5 +99,60 @@ public class ProfileController : ControllerBase
             message = "Password changed successfully.",
             token = newToken 
         });
+    }
+
+    [HttpPost("upload-picture")]
+    public async Task<IActionResult> UploadPicture([FromForm] IFormFile file)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            return Unauthorized();
+
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest("Invalid file type. Only JPG, PNG and GIF are allowed.");
+
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest("File size exceeds 5MB limit.");
+
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+            return NotFound("User not found.");
+
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        var uniqueFileName = $"user_{userId}_{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        // Delete old profile picture if it exists
+        if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+        {
+            var oldFileName = Path.GetFileName(user.ProfilePictureUrl);
+            var oldFilePath = Path.Combine(uploadsFolder, oldFileName);
+            if (System.IO.File.Exists(oldFilePath))
+            {
+                System.IO.File.Delete(oldFilePath);
+            }
+        }
+
+        var relativePath = $"/uploads/profiles/{uniqueFileName}";
+        user.ProfilePictureUrl = relativePath;
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Ok(new { message = "Profile picture updated successfully.", profilePictureUrl = relativePath });
     }
 }

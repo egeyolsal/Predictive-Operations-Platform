@@ -35,6 +35,8 @@ public class User
     public string? PasswordResetToken { get; set; }
     public DateTime? ResetTokenExpires { get; set; }
 
+    public string? ProfilePictureUrl { get; set; }
+
     // Navigation property
     public ICollection<TaskItem> AssignedTasks { get; set; } = new List<TaskItem>();
 }

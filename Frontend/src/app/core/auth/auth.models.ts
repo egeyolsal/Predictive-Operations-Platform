@@ -13,6 +13,7 @@ export interface AuthResponse {
   token: string;
   username: string;
   role: string;
+  profilePictureUrl?: string;
 }
 
 export interface ForgotPasswordRequest {

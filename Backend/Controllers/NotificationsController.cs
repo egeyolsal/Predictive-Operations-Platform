@@ -1,0 +1,123 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TaskInventoryApi.Data;
+using TaskInventoryApi.Dtos;
+using TaskInventoryApi.Models;
+using TaskInventoryApi.Repositories;
+
+namespace TaskInventoryApi.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class NotificationsController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+
+    public NotificationsController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<NotificationDto>>> GetNotifications()
+    {
+        var userRole = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirst("role")?.Value;
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirst("nameid")?.Value ?? User.FindFirst("sub")?.Value;
+        
+        if (!int.TryParse(userIdString, out int userId))
+        {
+            return Unauthorized();
+        }
+
+        var notifications = new List<NotificationDto>();
+        var now = DateTime.UtcNow;
+
+        if (userRole == UserRole.Worker.ToString())
+        {
+            // Fetch tasks assigned to the worker that are in ToDo state
+            var myTasks = await _context.TaskItems
+                .AsNoTracking()
+                .Where(t => t.AssignedUserId == userId && t.Status == TaskItemStatus.ToDo)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
+            foreach (var t in myTasks)
+            {
+                notifications.Add(new NotificationDto
+                {
+                    Type = "task",
+                    Message = $"New task assigned: {t.Title}",
+                    Link = "/tasks",
+                    Date = t.CreatedAt
+                });
+            }
+        }
+        else if (userRole == UserRole.Admin.ToString())
+        {
+            // Low stock alerts
+            var lowStockItems = await _context.InventoryItems
+                .AsNoTracking()
+                .Where(i => i.CurrentStock < i.CriticalThreshold)
+                .OrderBy(i => i.CurrentStock)
+                .Take(5)
+                .ToListAsync();
+
+            foreach (var i in lowStockItems)
+            {
+                notifications.Add(new NotificationDto
+                {
+                    Type = "inventory",
+                    Message = $"Low stock alert: {i.Name} ({i.CurrentStock}/{i.CriticalThreshold})",
+                    Link = "/inventory",
+                    Date = now // Ongoing issue
+                });
+            }
+
+            // Recently completed tasks (last 24h)
+            var recentCompletedTasks = await _context.TaskItems
+                .AsNoTracking()
+                .Include(t => t.AssignedUser)
+                .Where(t => t.Status == TaskItemStatus.Done && t.CompletedAt >= now.AddDays(-1))
+                .OrderByDescending(t => t.CompletedAt)
+                .Take(3)
+                .ToListAsync();
+
+            foreach (var t in recentCompletedTasks)
+            {
+                notifications.Add(new NotificationDto
+                {
+                    Type = "task",
+                    Message = $"Task completed by {t.AssignedUser?.Username}: {t.Title}",
+                    Link = "/tasks",
+                    Date = t.CompletedAt ?? now
+                });
+            }
+            
+            // Unassigned ToDo Tasks
+            var unassignedTasks = await _context.TaskItems
+                .AsNoTracking()
+                .Where(t => t.Status == TaskItemStatus.ToDo && t.AssignedUserId == null)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(3)
+                .ToListAsync();
+                
+            foreach (var t in unassignedTasks)
+            {
+                notifications.Add(new NotificationDto
+                {
+                    Type = "task",
+                    Message = $"Unassigned task waiting: {t.Title}",
+                    Link = "/tasks",
+                    Date = t.CreatedAt
+                });
+            }
+        }
+
+        // Sort all aggregated notifications by date descending
+        return Ok(notifications.OrderByDescending(n => n.Date).ToList());
+    }
+}

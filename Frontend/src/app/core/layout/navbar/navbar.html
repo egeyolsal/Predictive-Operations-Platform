@@ -11,9 +11,34 @@
 
   <div class="topbar-actions">
     <!-- Notification Bell -->
-    <button class="notification-btn" title="Notifications">
-      <i class="pi pi-bell" pBadge value="3" severity="danger"></i>
+    <button class="notification-btn" title="Notifications" (click)="op.toggle($event)">
+      @if (unreadCount() > 0) {
+        <i class="pi pi-bell" pBadge [value]="unreadCount().toString()" severity="danger"></i>
+      } @else {
+        <i class="pi pi-bell"></i>
+      }
     </button>
+    
+    <p-popover #op styleClass="notification-panel">
+      <div class="p-3">
+        <h3 class="m-0 mb-3 text-lg font-semibold text-800">Notifications</h3>
+        @if (notifications().length > 0) {
+          <div class="flex flex-column gap-2">
+            @for (notif of notifications(); track notif) {
+              <div class="notification-item cursor-pointer p-2 border-round hover:surface-hover transition-colors transition-duration-200" (click)="onNotificationClick(notif); op.hide()">
+                <div class="flex align-items-center gap-2 mb-1">
+                  <i class="pi" [ngClass]="{'pi-box text-orange-500': notif.type === 'inventory', 'pi-check-circle text-green-500': notif.type === 'task'}"></i>
+                  <span class="text-sm text-600">{{ notif.date | date:'short' }}</span>
+                </div>
+                <div class="text-700 font-medium text-sm">{{ notif.message }}</div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-500 text-center py-3">No new notifications.</div>
+        }
+      </div>
+    </p-popover>
 
     <!-- User Profile Dropdown -->
     <div class="user-profile">
@@ -22,12 +47,16 @@
         <span class="role">{{ auth.role() }}</span>
       </div>
       <div class="avatar-container" (click)="menu.toggle($event)">
-        <p-avatar 
-          [label]="auth.username() ? auth.username()![0].toUpperCase() : 'U'"
-          size="large" 
-          shape="circle"
-          styleClass="custom-avatar">
-        </p-avatar>
+        @if (getAvatarUrl()) {
+          <img [src]="getAvatarUrl()" alt="Profile" class="custom-avatar-img">
+        } @else {
+          <p-avatar 
+            [label]="auth.username() ? auth.username()![0].toUpperCase() : 'U'"
+            size="large" 
+            shape="circle"
+            styleClass="custom-avatar">
+          </p-avatar>
+        }
       </div>
       <p-menu #menu [model]="menuItems" [popup]="true" styleClass="modern-dropdown"></p-menu>
     </div>

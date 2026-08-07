@@ -53,4 +53,20 @@
       }
     </ul>
   </div>
+
+  <div class="spacer"></div>
+
+  <a class="user-widget" routerLink="/profile" routerLinkActive="active">
+    <div class="user-avatar">
+      @if (getAvatarUrl()) {
+        <img [src]="getAvatarUrl()" alt="Profile">
+      } @else {
+        {{ username() ? username()!.charAt(0).toUpperCase() : 'U' }}
+      }
+    </div>
+    <div class="user-info">
+      <span class="user-name">{{ username() }}</span>
+      <span class="user-role">View Profile</span>
+    </div>
+  </a>
 </nav>

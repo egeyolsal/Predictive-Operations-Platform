@@ -487,3 +487,6 @@ $RECYCLE.BIN/
 *.db
 *.db-shm
 *.db-wal
+
+# Ignore user uploaded files
+Backend/wwwroot/uploads/

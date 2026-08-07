@@ -82,6 +82,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+if (!Directory.Exists(uploadsFolder))
+{
+    Directory.CreateDirectory(uploadsFolder);
+}
+
 if (args.Contains("seed"))
 {
     using var scope = app.Services.CreateScope();
@@ -102,8 +108,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAngularDev");
+app.UseStaticFiles();
 
 app.UseAuthentication(); // Authentication middleware should be added before Authorization middleware.
 app.UseAuthorization();

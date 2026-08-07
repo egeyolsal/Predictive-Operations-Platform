@@ -68,6 +68,34 @@
       </div>
     </div>
 
+    <!-- NOTIFICATIONS WIDGET -->
+    <div class="widget-card col-span-1">
+      <div class="widget-header">
+        <h3>Recent Notifications</h3>
+        <span class="subtitle">Latest Activity</span>
+      </div>
+      <div class="widget-body p-0" style="height: 250px; overflow-y: auto;">
+        @if (notifications().length) {
+          <div class="flex flex-column gap-2 p-3">
+            @for (notif of notifications(); track notif) {
+              <a [routerLink]="notif.link" class="flex align-items-start gap-3 p-2 border-round hover:surface-hover transition-colors transition-duration-200 text-color no-underline">
+                <i class="pi mt-1" [ngClass]="{'pi-box text-orange-500': notif.type === 'inventory', 'pi-check-circle text-green-500': notif.type === 'task'}"></i>
+                <div>
+                  <div class="text-sm font-medium mb-1">{{ notif.message }}</div>
+                  <div class="text-xs text-500">{{ notif.date | date:'short' }}</div>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="text-center p-4 text-500 flex flex-column align-items-center">
+            <i class="pi pi-bell-slash text-4xl mb-2 text-300"></i>
+            <span>No notifications yet</span>
+          </div>
+        }
+      </div>
+    </div>
+
     @if (auth.role() === 'Admin') {
       <div class="widget-card col-span-1">
         <div class="widget-header">

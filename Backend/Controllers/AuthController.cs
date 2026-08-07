@@ -46,7 +46,8 @@ public class AuthController : ControllerBase
             Token = token,
             Username = user.Username,
             Email = user.Email,
-            Role = user.Role.ToString()
+            Role = user.Role.ToString(),
+            ProfilePictureUrl = user.ProfilePictureUrl
         });
     }
 
@@ -66,7 +67,8 @@ public class AuthController : ControllerBase
             Token = token,
             Username = user.Username,
             Email = user.Email,
-            Role = user.Role.ToString()
+            Role = user.Role.ToString(),
+            ProfilePictureUrl = user.ProfilePictureUrl
         });
     }
 

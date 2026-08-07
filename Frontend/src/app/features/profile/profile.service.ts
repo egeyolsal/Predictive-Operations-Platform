@@ -9,6 +9,7 @@ export interface ProfileDto {
   email: string;
   phoneNumber?: string;
   role: string;
+  profilePictureUrl?: string;
 }
 
 export interface UpdateProfileDto {
@@ -35,6 +36,12 @@ export class ProfileService {
 
   updateProfile(dto: UpdateProfileDto): Observable<any> {
     return this.http.put(this.baseUrl, dto);
+  }
+
+  uploadProfilePicture(file: File): Observable<{ message: string, profilePictureUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ message: string, profilePictureUrl: string }>(`${this.baseUrl}/upload-picture`, formData);
   }
 
   changePassword(dto: ChangePasswordDto): Observable<{ message: string, token: string }> {

@@ -17,7 +17,22 @@
             <p-divider></p-divider>
           </ng-template>
 
-          <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-column gap-4 mt-2">
+          <div class="flex flex-column align-items-center mb-4 mt-2">
+            <input type="file" #fileInput accept="image/*" style="display: none" (change)="onFileSelected($event)">
+            <div class="avatar-container" (click)="fileInput.click()">
+              @if (profilePictureUrl() || previewUrl()) {
+                <img [src]="getProfilePictureUrl()" alt="Profile Picture">
+              } @else {
+                <span class="avatar-placeholder">{{ getInitials() }}</span>
+              }
+              <div class="avatar-overlay">
+                <i class="pi pi-camera"></i>
+                <span>Change</span>
+              </div>
+            </div>
+          </div>
+
+          <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="flex flex-column gap-4">
             
             <div class="field mb-0">
               <label for="username" class="block text-sm font-semibold uppercase tracking-wide text-600 mb-2">Username</label>
