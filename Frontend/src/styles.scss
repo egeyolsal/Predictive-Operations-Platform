@@ -60,4 +60,53 @@ body {
   font-weight: 600;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
+}
+
+/* ==============================================================
+   Modern Global Table Styles
+   ============================================================== */
+.p-datatable {
+  background: var(--surface-card);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  border: 1px solid var(--surface-border);
+  overflow: hidden;
+}
+
+.p-datatable .p-datatable-header {
+  background: transparent;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--surface-ground);
+  color: var(--text-color-secondary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-bottom: 2px solid var(--surface-border);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 1rem 1.5rem;
+  border: none;
+  border-bottom: 1px solid var(--surface-border);
+  color: var(--text-color);
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: var(--surface-ground) !important;
+}
+
+/* Pagination modern styling */
+.p-paginator {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--surface-border) !important;
+  padding: 1rem !important;
 }

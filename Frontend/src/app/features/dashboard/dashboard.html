@@ -9,7 +9,7 @@
     
     <!-- ADMIN SPECIFIC ROW 1 -->
     @if (auth.role() === 'Admin') {
-      <div class="kpi-card">
+      <div class="kpi-card hover-card" [routerLink]="['/inventory']">
         <div class="kpi-header">
           <span class="title">Total Active Inventory</span>
           <div class="icon-box blue"><i class="pi pi-box"></i></div>
@@ -17,7 +17,7 @@
         <div class="kpi-value">{{ data()?.totalActiveInventory }}</div>
       </div>
 
-      <div class="kpi-card">
+      <div class="kpi-card hover-card" [routerLink]="['/inventory']">
         <div class="kpi-header">
           <span class="title">Low Stock Items</span>
           <div class="icon-box orange"><i class="pi pi-exclamation-triangle"></i></div>
@@ -27,7 +27,7 @@
     }
 
     <!-- SHARED ROW -->
-    <div class="kpi-card">
+    <div class="kpi-card hover-card" [routerLink]="['/tasks']">
       <div class="kpi-header">
         <span class="title">{{ auth.role() === 'Admin' ? 'Pending Tasks' : 'My Pending Tasks' }}</span>
         <div class="icon-box purple"><i class="pi pi-clock"></i></div>
@@ -35,7 +35,7 @@
       <div class="kpi-value">{{ data()?.pendingTasks }}</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card hover-card" [routerLink]="['/tasks']">
       <div class="kpi-header">
         <span class="title">{{ auth.role() === 'Admin' ? 'Tasks In Progress' : 'My Tasks In Progress' }}</span>
         <div class="trend green"><i class="pi pi-arrow-up"></i> {{ data()?.inProgressTasksTrend }}%</div>
@@ -44,7 +44,7 @@
       <div class="kpi-footer">Last 30 days</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card hover-card" [routerLink]="['/tasks']">
       <div class="kpi-header">
         <span class="title">{{ auth.role() === 'Admin' ? 'Completed Tasks' : 'My Completed Tasks' }}</span>
         <div class="trend green"><i class="pi pi-arrow-up"></i> {{ data()?.completedTasksTrend }}%</div>

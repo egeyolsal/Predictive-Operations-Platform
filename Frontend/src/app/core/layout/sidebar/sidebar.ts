@@ -1,11 +1,12 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { Auth } from '../../auth/auth';
 import { API_BASE_URL } from '../../config/api-config';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
@@ -15,6 +16,12 @@ export class Sidebar {
   readonly canViewCategories = computed(() => this.auth.role() === 'Admin' || this.auth.role() === 'Analyst');
   readonly profilePictureUrl = computed(() => this.auth.profilePictureUrl());
   readonly username = computed(() => this.auth.username());
+
+  readonly isCollapsed = signal(false);
+
+  toggleSidebar(): void {
+    this.isCollapsed.update(v => !v);
+  }
 
   getAvatarUrl(): string {
     const url = this.profilePictureUrl();

@@ -18,4 +18,8 @@ export class UsersService {
   updateUserRole(id: number, dto: UpdateUserRoleDto): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.baseUrl}/${id}/role`, dto);
   }
+
+  adminCreateUser(dto: any): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/admin-create`, dto);
+  }
 }

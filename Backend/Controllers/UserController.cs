@@ -71,4 +71,28 @@ public class UserController : ControllerBase
 
         return Ok(new { message = "User role updated successfully." });
     }
+    [Authorize(Roles = "Admin")]
+    [HttpPost("admin-create")]
+    public async Task<ActionResult> AdminCreateUser(AdminCreateUserDto dto)
+    {
+        var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Username == dto.Username || u.Email == dto.Email);
+        if (existingUsers.Any())
+            return BadRequest("This username or email is already taken.");
+
+        if (!Enum.TryParse<UserRole>(dto.Role, out var newRole))
+            return BadRequest("Invalid role specified.");
+
+        var user = new User
+        {
+            Username = dto.Username,
+            Email = dto.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            Role = newRole
+        };
+
+        await _unitOfWork.Users.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Ok(new { message = "User created successfully." });
+    }
 }

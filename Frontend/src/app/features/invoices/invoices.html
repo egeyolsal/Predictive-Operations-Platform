@@ -1,6 +1,19 @@
 <div class="invoices-page p-4">
-  <div class="flex justify-content-between align-items-center mb-4">
-    <h1 class="m-0 text-3xl font-semibold text-color">Invoices</h1>
+  <div class="flex justify-content-between align-items-center mb-5">
+    <div>
+      <h1 class="m-0 text-3xl font-semibold text-color">Invoices</h1>
+      <p class="text-color-secondary mt-1">Manage purchase and sales invoices.</p>
+    </div>
+    <div class="flex align-items-center gap-3">
+      <input
+        pInputText
+        type="text"
+        placeholder="Search invoices..."
+        [value]="searchTerm()"
+        (input)="onSearchInput($event)"
+        class="w-15rem"
+      />
+    </div>
   </div>
 
   <p-tabs value="0">
@@ -17,8 +30,9 @@
       <!-- History Tab -->
       <p-tabpanel value="0">
         <div class="surface-card p-4 shadow-2 border-round">
-          <p-table [value]="invoices()" [loading]="isLoading()" [paginator]="true" [rows]="10">
-            <ng-template pTemplate="header">
+          <p-table [value]="filteredInvoices()" [loading]="isLoading()" [paginator]="true" [rows]="10">
+
+        <ng-template pTemplate="header">
               <tr>
                 <th>Invoice #</th>
                 <th>Date</th>

@@ -32,12 +32,23 @@ export class CategoriesComponent implements OnInit {
   readonly editingItem = signal<CategoryItem | null>(null);
 
   readonly filteredItems = computed(() => {
-    const term = this.searchTerm().trim().toLowerCase();
+    const term = this.searchTerm().trim();
     if (!term) return this.items();
-    return this.items().filter(item => 
-      item.name.toLowerCase().includes(term) || 
-      (item.description && item.description.toLowerCase().includes(term))
-    );
+    
+    const lowerTerm = term.replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+
+    return this.items().filter(item => {
+      const name = (item.name || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+      const desc = (item.description || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+
+      const nameWords = name.split(' ');
+      const descWords = desc.split(' ');
+
+      const matchName = nameWords.some(word => word.startsWith(lowerTerm));
+      const matchDesc = descWords.some(word => word.startsWith(lowerTerm));
+
+      return matchName || matchDesc || name.startsWith(lowerTerm) || desc.startsWith(lowerTerm);
+    });
   });
 
   ngOnInit(): void {

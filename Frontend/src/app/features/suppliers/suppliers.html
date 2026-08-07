@@ -1,18 +1,19 @@
 <div class="card">
-    <div class="page-header">
-        <h2>Suppliers</h2>
-        @if (isAdmin()) {
-          <p-button label="Add Supplier" icon="pi pi-plus" (onClick)="showDialogToAdd()"></p-button>
-        }
+    <div class="flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="m-0 text-3xl font-semibold text-color">Suppliers</h1>
+            <p class="text-color-secondary mt-1">Manage your suppliers and purchase contacts.</p>
+        </div>
+        <div class="flex align-items-center gap-3">
+            <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Search keyword..." class="w-15rem" />
+            @if (isAdmin()) {
+              <p-button label="Add Supplier" icon="pi pi-plus" (onClick)="showDialogToAdd()"></p-button>
+            }
+        </div>
     </div>
 
     <p-table [value]="suppliers()" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }"
              [globalFilterFields]="['name', 'contactName', 'email', 'phone']" #dt>
-        <ng-template pTemplate="caption">
-            <div class="table-header">
-                <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Search keyword..." />
-            </div>
-        </ng-template>
         <ng-template pTemplate="header">
             <tr>
                 <th pSortableColumn="name">Company Name <p-sortIcon field="name"></p-sortIcon></th>

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -49,6 +49,28 @@ export class InvoicesComponent implements OnInit {
   readonly supplierItems = signal<SupplierItemResponseDto[]>([]);
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
+  readonly searchTerm = signal('');
+
+  readonly filteredInvoices = computed(() => {
+    const term = this.searchTerm().trim();
+    if (!term) return this.invoices();
+
+    const lowerTerm = term.replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+
+    return this.invoices().filter((inv) => {
+      const invNum = (inv.invoiceNumber || '').trim().toLowerCase();
+      const customer = (inv.customerName || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+      const supplier = (inv.supplierName || '').trim().replace(/I/g, 'ı').replace(/İ/g, 'i').toLowerCase();
+
+      const customerWords = customer.split(' ');
+      const supplierWords = supplier.split(' ');
+
+      const matchCustomer = customerWords.some(word => word.startsWith(lowerTerm));
+      const matchSupplier = supplierWords.some(word => word.startsWith(lowerTerm));
+
+      return invNum.startsWith(lowerTerm) || customer.startsWith(lowerTerm) || supplier.startsWith(lowerTerm) || matchCustomer || matchSupplier;
+    });
+  });
 
   readonly detailsDialogVisible = signal(false);
   readonly selectedInvoice = signal<InvoiceResponseDto | null>(null);
@@ -108,6 +130,11 @@ export class InvoicesComponent implements OnInit {
     this.inventoryApi.getAll().subscribe(data => this.inventoryItems.set(data));
     this.customerService.getCustomers().subscribe(data => this.customers.set(data));
     this.supplierService.getSuppliers().subscribe(data => this.suppliers.set(data));
+  }
+
+  onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm.set(value);
   }
 
   createLineItem(): FormGroup {

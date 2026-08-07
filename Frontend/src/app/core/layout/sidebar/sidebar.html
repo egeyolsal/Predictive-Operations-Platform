@@ -1,53 +1,68 @@
-<nav class="sidebar">
+<nav class="sidebar" [class.collapsed]="isCollapsed()">
   <div class="logo-container">
     <div class="logo-icon">WS</div>
-    <span class="logo-text">WorkSight</span>
+    @if (!isCollapsed()) {
+      <span class="logo-text">WorkSight</span>
+    }
+    <button class="collapse-btn" (click)="toggleSidebar()">
+      <i class="pi" [ngClass]="isCollapsed() ? 'pi-angle-right' : 'pi-angle-left'"></i>
+    </button>
   </div>
 
   <div class="menu-section">
-    <span class="section-title">MAIN MENU</span>
+    @if (!isCollapsed()) {
+      <span class="section-title">MAIN MENU</span>
+    }
     <ul>
       <li>
-        <a routerLink="/dashboard" routerLinkActive="active">
-          <i class="pi pi-desktop"></i> Dashboard
+        <a routerLink="/dashboard" routerLinkActive="active" [title]="isCollapsed() ? 'Dashboard' : ''">
+          <i class="pi pi-desktop"></i>
+          @if (!isCollapsed()) { <span>Dashboard</span> }
         </a>
       </li>
       <li>
-        <a routerLink="/inventory" routerLinkActive="active">
-          <i class="pi pi-box"></i> Inventory
+        <a routerLink="/inventory" routerLinkActive="active" [title]="isCollapsed() ? 'Inventory' : ''">
+          <i class="pi pi-box"></i>
+          @if (!isCollapsed()) { <span>Inventory</span> }
         </a>
       </li>
       @if (canViewCategories()) {
         <li>
-          <a routerLink="/categories" routerLinkActive="active">
-            <i class="pi pi-tags"></i> Categories
+          <a routerLink="/categories" routerLinkActive="active" [title]="isCollapsed() ? 'Categories' : ''">
+            <i class="pi pi-tags"></i>
+            @if (!isCollapsed()) { <span>Categories</span> }
           </a>
         </li>
       }
       <li>
-        <a routerLink="/tasks" routerLinkActive="active">
-          <i class="pi pi-list-check"></i> Tasks
+        <a routerLink="/tasks" routerLinkActive="active" [title]="isCollapsed() ? 'Tasks' : ''">
+          <i class="pi pi-list-check"></i>
+          @if (!isCollapsed()) { <span>Tasks</span> }
         </a>
       </li>
       <li>
-        <a routerLink="/customers" routerLinkActive="active">
-          <i class="pi pi-users"></i> Customers
+        <a routerLink="/customers" routerLinkActive="active" [title]="isCollapsed() ? 'Customers' : ''">
+          <i class="pi pi-users"></i>
+          @if (!isCollapsed()) { <span>Customers</span> }
         </a>
       </li>
       @if (isAdmin()) {
         <li>
-          <a routerLink="/invoices" routerLinkActive="active">
-            <i class="pi pi-receipt"></i> Invoices
+          <a routerLink="/invoices" routerLinkActive="active" [title]="isCollapsed() ? 'Invoices' : ''">
+            <i class="pi pi-receipt"></i>
+            @if (!isCollapsed()) { <span>Invoices</span> }
           </a>
         </li>
         <li>
-          <a routerLink="/suppliers" routerLinkActive="active">
-            <i class="pi pi-truck"></i> Suppliers
+          <a routerLink="/suppliers" routerLinkActive="active" [title]="isCollapsed() ? 'Suppliers' : ''">
+            <i class="pi pi-truck"></i>
+            @if (!isCollapsed()) { <span>Suppliers</span> }
           </a>
         </li>
         <li>
-          <a routerLink="/users" routerLinkActive="active">
-            <i class="pi pi-user-edit"></i> Users
+          <a routerLink="/users" routerLinkActive="active" [title]="isCollapsed() ? 'Users' : ''">
+            <i class="pi pi-user-edit"></i>
+            @if (!isCollapsed()) { <span>Users</span> }
           </a>
         </li>
       }
@@ -56,7 +71,7 @@
 
   <div class="spacer"></div>
 
-  <a class="user-widget" routerLink="/profile" routerLinkActive="active">
+  <a class="user-widget" routerLink="/profile" routerLinkActive="active" [title]="isCollapsed() ? 'Profile' : ''">
     <div class="user-avatar">
       @if (getAvatarUrl()) {
         <img [src]="getAvatarUrl()" alt="Profile">
@@ -64,9 +79,11 @@
         {{ username() ? username()!.charAt(0).toUpperCase() : 'U' }}
       }
     </div>
-    <div class="user-info">
-      <span class="user-name">{{ username() }}</span>
-      <span class="user-role">View Profile</span>
-    </div>
+    @if (!isCollapsed()) {
+      <div class="user-info">
+        <span class="user-name">{{ username() }}</span>
+        <span class="user-role">View Profile</span>
+      </div>
+    }
   </a>
 </nav>
