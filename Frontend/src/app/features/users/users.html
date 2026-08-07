@@ -1,0 +1,60 @@
+<div class="users-page p-4">
+  <div class="mb-5">
+    <h1 class="m-0 text-3xl font-semibold text-color">Users Management</h1>
+    <p class="text-color-secondary mt-1">Manage all user accounts and their roles.</p>
+  </div>
+
+  <p-table [value]="users()" [loading]="isLoading()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+    responsiveLayout="scroll" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+    [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-datatable-striped shadow-2 border-round-xl overflow-hidden">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
+        <th pSortableColumn="username">Username <p-sortIcon field="username"></p-sortIcon></th>
+        <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
+        <th pSortableColumn="phoneNumber">Phone <p-sortIcon field="phoneNumber"></p-sortIcon></th>
+        <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.id }}</td>
+        <td class="font-semibold">{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phoneNumber || '-' }}</td>
+        <td>
+          <p-select [options]="roleOptions" [(ngModel)]="user.role" (onChange)="onRoleChange(user, $event.value)"
+            [disabled]="user.username === auth.username()" appendTo="body"
+            styleClass="w-8rem border-none surface-100 hover:surface-200 transition-colors border-round-2xl">
+            <ng-template pTemplate="selectedItem" let-selectedOption>
+              <div class="flex align-items-center font-semibold text-sm"
+                [ngClass]="{'text-primary': selectedOption.value === 'Admin', 'text-green-600': selectedOption.value === 'Analyst', 'text-700': selectedOption.value === 'Worker'}">
+                <i class="pi pi-shield mr-2 text-xs" *ngIf="selectedOption.value === 'Admin'"></i>
+                <i class="pi pi-chart-line mr-2 text-xs" *ngIf="selectedOption.value === 'Analyst'"></i>
+                <i class="pi pi-briefcase mr-2 text-xs" *ngIf="selectedOption.value === 'Worker'"></i>
+                {{ selectedOption.label }}
+              </div>
+            </ng-template>
+            <ng-template pTemplate="item" let-option>
+              <div class="font-medium text-sm">{{ option.label }}</div>
+            </ng-template>
+          </p-select>
+          @if (user.username === auth.username()) {
+          <div class="mt-2 flex align-items-center text-red-500 font-medium text-xs surface-50 border-round-lg p-2">
+            <i class="pi pi-lock mr-2"></i>
+            <span>You cannot change your own role.</span>
+          </div>
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="text-center p-4">No users found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

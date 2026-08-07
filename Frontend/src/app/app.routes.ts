@@ -50,6 +50,11 @@ export const routes: Routes = [
       { path: 'profile', loadComponent: () => import('./features/profile/profile').then(m => m.ProfileComponent) },
       { path: 'settings', loadComponent: () => import('./features/settings/settings').then(m => m.SettingsComponent) },
       {
+        path: 'users',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/users/users').then(m => m.UsersComponent)
+      },
+      {
         path: 'invoices',
         canActivate: [adminGuard],
         loadComponent: () => import('./features/invoices/invoices').then(m => m.InvoicesComponent)
