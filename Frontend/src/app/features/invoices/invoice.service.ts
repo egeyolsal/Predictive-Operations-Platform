@@ -23,7 +23,11 @@ export class InvoiceService {
     return this.http.post<InvoiceResponseDto>(this.baseUrl, dto);
   }
 
-  cancelInvoice(id: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/${id}/cancel`, {});
+  cancelInvoice(id: number): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${id}/cancel`, {});
+  }
+
+  downloadPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/pdf`, { responseType: 'blob' });
   }
 }

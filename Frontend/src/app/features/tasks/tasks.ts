@@ -61,7 +61,8 @@ export class Tasks implements OnInit {
       next: (data) => {
         const formattedData = data.map(item => ({
           ...item,
-          createdAt: (item.createdAt && !item.createdAt.endsWith('Z')) ? item.createdAt + 'Z' : item.createdAt
+          createdAt: (item.createdAt && !item.createdAt.endsWith('Z')) ? item.createdAt + 'Z' : item.createdAt,
+          completedAt: (item.completedAt && !item.completedAt.endsWith('Z')) ? item.completedAt + 'Z' : item.completedAt
         }));
         this.items.set(formattedData);
         this.isLoading.set(false);
@@ -203,6 +204,18 @@ export class Tasks implements OnInit {
 
   showAnomalyWarning(task: TaskItem): boolean {
     return (this.isCriticalStockTask(task) || this.isAnomalousTask(task)) && (this.isAdmin() || this.isAnalyst());
+  }
+
+  getActualDurationHours(task: TaskItem): string | null {
+    if (task.status !== TaskItemStatus.Done || !task.completedAt || !task.createdAt) {
+      return null;
+    }
+    const created = new Date(task.createdAt);
+    const completed = new Date(task.completedAt);
+    const diffMs = completed.getTime() - created.getTime();
+    if (diffMs < 0) return '0.0';
+    const diffHours = diffMs / (1000 * 60 * 60);
+    return diffHours.toFixed(1);
   }
 
   extractSupplierEmail(description: string | null | undefined): string | null {

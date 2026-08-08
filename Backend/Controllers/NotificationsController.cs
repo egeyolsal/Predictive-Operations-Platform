@@ -35,7 +35,7 @@ public class NotificationsController : ControllerBase
         var notifications = new List<NotificationDto>();
         var now = DateTime.UtcNow;
 
-        if (userRole == UserRole.Worker.ToString())
+        if (userRole == UserRole.Worker.ToString() || userRole == UserRole.Analyst.ToString())
         {
             // Fetch tasks assigned to the worker that are in ToDo state
             var myTasks = await _context.TaskItems

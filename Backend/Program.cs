@@ -6,6 +6,9 @@ using TaskInventoryApi.Services;
 using Microsoft.EntityFrameworkCore;
 using TaskInventoryApi.Data;
 using TaskInventoryApi.Repositories;
+using QuestPDF.Infrastructure;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +51,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, DevelopmentEmailService>();
 builder.Services.AddScoped<ITaskAnomalyService, TaskAnomalyService>();
+builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
 
 builder.Services.AddAuthentication(options =>
 {

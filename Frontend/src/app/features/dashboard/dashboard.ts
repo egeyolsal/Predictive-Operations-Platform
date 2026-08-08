@@ -117,10 +117,14 @@ export class Dashboard implements OnInit {
     });
 
     this.notificationService.getNotifications().subscribe({
-      next: (data) => this.notifications.set(data.map(n => ({
-        ...n,
-        date: (n.date && !n.date.endsWith('Z')) ? n.date + 'Z' : n.date
-      }))),
+      next: (data) => {
+        let formattedData = data.map(n => ({
+          ...n,
+          date: (n.date && !n.date.endsWith('Z')) ? n.date + 'Z' : n.date
+        }));
+        formattedData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        this.notifications.set(formattedData);
+      },
       error: (err) => console.error(err)
     });
   }

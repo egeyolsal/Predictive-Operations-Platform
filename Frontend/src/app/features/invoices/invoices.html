@@ -70,6 +70,14 @@
                             title="View Details"
                             (onClick)="showDetails(inv)">
                   </p-button>
+                  <p-button icon="pi pi-file-pdf" 
+                            severity="danger" 
+                            [text]="true" 
+                            [rounded]="true" 
+                            title="Download PDF"
+                            [loading]="isDownloadingPdf() === inv.id"
+                            (onClick)="downloadPdf(inv)">
+                  </p-button>
                   @if (auth.role() === 'Admin') {
                     <p-button icon="pi pi-times" 
                               severity="danger" 

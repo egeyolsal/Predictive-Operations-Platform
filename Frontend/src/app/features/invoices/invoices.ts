@@ -74,6 +74,7 @@ export class InvoicesComponent implements OnInit {
 
   readonly detailsDialogVisible = signal(false);
   readonly selectedInvoice = signal<InvoiceResponseDto | null>(null);
+  readonly isDownloadingPdf = signal<number | null>(null);
 
   readonly invoiceTypes = [
     { label: 'Inbound (Purchase)', value: InvoiceType.Inbound },
@@ -285,6 +286,28 @@ export class InvoicesComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not fetch invoice details.' });
+      }
+    });
+  }
+
+  downloadPdf(invoice: InvoiceResponseDto): void {
+    this.isDownloadingPdf.set(invoice.id);
+    this.invoiceService.downloadPdf(invoice.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Invoice_${invoice.invoiceNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.isDownloadingPdf.set(null);
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to download PDF.' });
+        this.isDownloadingPdf.set(null);
       }
     });
   }

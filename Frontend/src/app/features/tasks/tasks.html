@@ -40,6 +40,7 @@
       }
       <th pSortableColumn="categoryId">Category <p-sortIcon field="categoryId" /></th>
       <th pSortableColumn="expectedDurationHours">Expected (h) <p-sortIcon field="expectedDurationHours" /></th>
+      <th>Actual (h)</th>
       <th pSortableColumn="createdAt">Created <p-sortIcon field="createdAt" /></th>
       <th class="actions-column">Actions</th>
     </tr>
@@ -72,6 +73,13 @@
       }
       <td>{{ item.categoryName || item.categoryId }}</td>
       <td>{{ item.expectedDurationHours }}</td>
+      <td>
+        @if (getActualDurationHours(item) !== null) {
+          {{ getActualDurationHours(item) }}
+        } @else {
+          -
+        }
+      </td>
       <td>{{ item.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
       <td>
         <div class="action-buttons">
@@ -129,7 +137,7 @@
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="7">No tasks found.</td>
+      <td colspan="8">No tasks found.</td>
     </tr>
   </ng-template>
 </p-table>

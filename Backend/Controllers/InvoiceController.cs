@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TaskInventoryApi.Dtos;
 using TaskInventoryApi.Models;
 using TaskInventoryApi.Repositories;
+using TaskInventoryApi.Services;
 
 namespace TaskInventoryApi.Controllers;
 
@@ -280,6 +281,44 @@ public class InvoiceController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
 
         return Ok(new { message = "Invoice successfully cancelled and stock reverted." });
+    }
+
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GetPdf(int id, [FromServices] IInvoicePdfService pdfService)
+    {
+        var invoice = await _unitOfWork.Invoices.GetByIdAsync(id);
+        if (invoice == null)
+            return NotFound();
+
+        var allLineItems = await _unitOfWork.InvoiceLineItems.GetAllAsync();
+        invoice.LineItems = allLineItems.Where(li => li.InvoiceId == id).ToList();
+
+        var allInventoryItems = await _unitOfWork.InventoryItems.GetAllAsync();
+        var inventoryItemsDict = allInventoryItems.ToDictionary(i => i.Id);
+
+        foreach (var item in invoice.LineItems)
+        {
+            if (inventoryItemsDict.TryGetValue(item.InventoryItemId, out var invItem))
+            {
+                item.InventoryItem = invItem;
+            }
+        }
+
+        Customer? customer = null;
+        if (invoice.CustomerId.HasValue)
+        {
+            customer = await _unitOfWork.Customers.GetByIdAsync(invoice.CustomerId.Value);
+        }
+        
+        Supplier? supplier = null;
+        if (invoice.SupplierId.HasValue)
+        {
+            supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
+        }
+
+        var pdfBytes = pdfService.GenerateInvoicePdf(invoice, customer, supplier);
+        
+        return File(pdfBytes, "application/pdf", $"Invoice_{invoice.InvoiceNumber}.pdf");
     }
 
     private static InvoiceResponseDto MapToResponseDto(Invoice invoice, Customer? customer, Supplier? supplier, Dictionary<int, InventoryItem> inventoryItems)

@@ -119,11 +119,13 @@ export class Navbar implements OnInit {
       next: (data) => {
         // Mark ones as read based on localStorage
         const unreadList = data.filter(n => !this.readNotificationIds.has(n.id));
-        this.notifications.set(data.map(n => ({
+        let formattedData = data.map(n => ({
           ...n,
           date: (n.date && !n.date.endsWith('Z')) ? n.date + 'Z' : n.date,
           isRead: this.readNotificationIds.has(n.id)
-        })));
+        }));
+        formattedData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        this.notifications.set(formattedData);
         this.unreadCount.set(unreadList.length);
       },
       error: (err) => console.error('Error loading notifications', err)
