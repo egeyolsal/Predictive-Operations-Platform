@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskInventoryApi.Models;
+using TaskInventoryApi.Services;
 
 namespace TaskInventoryApi.Data;
 
@@ -8,7 +9,7 @@ public static class DataSeeder
     private static readonly Random _random = new(42);
     private const string SeedMarker = "Seed data ile otomatik oluşturuldu.";
 
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, ITaskAnomalyService anomalyService)
     {
         await context.Database.EnsureCreatedAsync();
 
@@ -26,6 +27,8 @@ public static class DataSeeder
         var tasks = await SeedTasksAsync(context, categories, users);
         await SeedInventoryTransactionsAsync(context, tasks, inventoryItems);
         await SeedInvoicesAsync(context, inventoryItems, customers);
+        
+        await RunAnomalyAnalysisOnSeededTasksAsync(context, anomalyService);
 
         Console.WriteLine("✅ Advanced Seed data created successfully.");
     }
@@ -116,7 +119,7 @@ public static class DataSeeder
     private static async Task<List<TaskItem>> SeedTasksAsync(
         ApplicationDbContext context, List<Category> categories, List<User> workers)
     {
-        const int tasksPerCategory = 5;
+        const int tasksPerCategory = 15;
         var tasks = new List<TaskItem>();
 
         foreach (var category in categories)
@@ -125,7 +128,7 @@ public static class DataSeeder
 
             for (int i = 0; i < tasksPerCategory; i++)
             {
-                bool isAnomalous = (i == tasksPerCategory - 1); // Son görevler anormal
+                bool isAnomalous = (i >= tasksPerCategory - 2); // Son 2 görev anormal (süresi abartılmış)
                 double actualDuration = isAnomalous ? baseDuration * 4.0 : baseDuration;
 
                 var createdAt = DateTime.UtcNow.AddDays(-_random.Next(5, 30));
@@ -141,7 +144,7 @@ public static class DataSeeder
                     CreatedAt = createdAt,
                     CompletedAt = completedAt,
                     ExpectedDurationHours = Math.Round(baseDuration, 1),
-                    IsAnomalous = isAnomalous
+                    IsAnomalous = false // Will be updated by anomaly service
                 };
 
                 tasks.Add(task);
@@ -208,5 +211,31 @@ public static class DataSeeder
 
         await context.Invoices.AddRangeAsync(invoice, invoice2);
         await context.SaveChangesAsync();
+    }
+
+    private static async Task RunAnomalyAnalysisOnSeededTasksAsync(ApplicationDbContext context, ITaskAnomalyService anomalyService)
+    {
+        Console.WriteLine("Running Anomaly Analysis on seeded tasks...");
+        var doneTasks = await context.TaskItems
+            .Where(t => t.Status == TaskItemStatus.Done && t.CompletedAt != null)
+            .ToListAsync();
+
+        int anomalyCount = 0;
+        foreach (var task in doneTasks)
+        {
+            bool isAnomalous = await anomalyService.EvaluateTaskAnomalyAsync(task);
+            if (isAnomalous)
+            {
+                task.IsAnomalous = true;
+                context.TaskItems.Update(task);
+                anomalyCount++;
+            }
+        }
+        
+        if (anomalyCount > 0)
+        {
+            await context.SaveChangesAsync();
+        }
+        Console.WriteLine($"✅ Anomaly Analysis complete. Found {anomalyCount} anomalous tasks out of {doneTasks.Count}.");
     }
 }

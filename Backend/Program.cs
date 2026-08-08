@@ -47,6 +47,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, DevelopmentEmailService>();
+builder.Services.AddScoped<ITaskAnomalyService, TaskAnomalyService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -92,7 +93,8 @@ if (args.Contains("seed"))
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DataSeeder.SeedAsync(context);
+    var anomalyService = scope.ServiceProvider.GetRequiredService<ITaskAnomalyService>();
+    await DataSeeder.SeedAsync(context, anomalyService);
     Console.WriteLine("✅ Seeding complete. Exiting.");
     return;
 }

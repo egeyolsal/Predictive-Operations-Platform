@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TaskInventoryApi.Dtos;
 using TaskInventoryApi.Models;
 using TaskInventoryApi.Repositories;
+using TaskInventoryApi.Services;
 
 namespace TaskInventoryApi.Controllers;
 
@@ -13,10 +14,12 @@ namespace TaskInventoryApi.Controllers;
 public class TaskController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ITaskAnomalyService _anomalyService;
 
-    public TaskController(IUnitOfWork unitOfWork)
+    public TaskController(IUnitOfWork unitOfWork, ITaskAnomalyService anomalyService)
     {
         _unitOfWork = unitOfWork;
+        _anomalyService = anomalyService;
     }
 
     [HttpGet]
@@ -113,11 +116,21 @@ public class TaskController : ControllerBase
 
         existingTask.Title = dto.Title;
         existingTask.Description = dto.Description;
-        existingTask.Status = dto.Status;
         existingTask.Priority = dto.Priority;
         existingTask.AssignedUserId = dto.AssignedUserId;
         existingTask.CategoryId = dto.CategoryId;
         existingTask.ExpectedDurationHours = dto.ExpectedDurationHours;
+
+        if (existingTask.Status != TaskItemStatus.Done && dto.Status == TaskItemStatus.Done)
+        {
+            existingTask.Status = dto.Status;
+            existingTask.CompletedAt ??= DateTime.UtcNow;
+            existingTask.IsAnomalous = await _anomalyService.EvaluateTaskAnomalyAsync(existingTask);
+        }
+        else
+        {
+            existingTask.Status = dto.Status;
+        }
 
         _unitOfWork.TaskItems.Update(existingTask);
         await _unitOfWork.SaveChangesAsync();
@@ -141,9 +154,16 @@ public class TaskController : ControllerBase
                 return Forbid();
         }
 
-        existingTask.Status = dto.Status;
-        if (dto.Status == TaskItemStatus.Done && existingTask.CompletedAt == null)
-            existingTask.CompletedAt = DateTime.UtcNow;
+        if (existingTask.Status != TaskItemStatus.Done && dto.Status == TaskItemStatus.Done)
+        {
+            existingTask.Status = dto.Status;
+            existingTask.CompletedAt ??= DateTime.UtcNow;
+            existingTask.IsAnomalous = await _anomalyService.EvaluateTaskAnomalyAsync(existingTask);
+        }
+        else
+        {
+            existingTask.Status = dto.Status;
+        }
 
         _unitOfWork.TaskItems.Update(existingTask);
         await _unitOfWork.SaveChangesAsync();

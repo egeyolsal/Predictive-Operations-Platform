@@ -8,7 +8,7 @@ export interface NotificationDto {
   type: string;
   message: string;
   link: string;
-  date: Date;
+  date: string;
   isRead?: boolean;
 }
 

@@ -117,7 +117,10 @@ export class Dashboard implements OnInit {
     });
 
     this.notificationService.getNotifications().subscribe({
-      next: (data) => this.notifications.set(data),
+      next: (data) => this.notifications.set(data.map(n => ({
+        ...n,
+        date: (n.date && !n.date.endsWith('Z')) ? n.date + 'Z' : n.date
+      }))),
       error: (err) => console.error(err)
     });
   }

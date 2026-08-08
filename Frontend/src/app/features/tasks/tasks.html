@@ -46,13 +46,13 @@
   </ng-template>
 
   <ng-template pTemplate="body" let-item>
-    <tr [ngClass]="{'bg-red-50 border-left-3 border-red-500': isCriticalStockTask(item)}">
+    <tr [ngClass]="{'bg-red-50 border-left-3 border-red-500': showAnomalyWarning(item)}">
       <td>
         <div class="flex align-items-center">
-          @if (isCriticalStockTask(item)) {
-            <i class="pi pi-sparkles text-red-500 mr-2 text-xl" style="animation: pulse 2s infinite;"></i>
+          @if (showAnomalyWarning(item)) {
+            <i class="pi pi-sparkles text-red-500 mr-2 text-xl" style="animation: pulse 2s infinite;" pTooltip="AI Anomaly / Critical Stock"></i>
           }
-          <span [class.font-bold]="isCriticalStockTask(item)" [class.text-red-700]="isCriticalStockTask(item)">{{ item.title }}</span>
+          <span [class.font-bold]="showAnomalyWarning(item)" [class.text-red-700]="showAnomalyWarning(item)">{{ item.title }}</span>
         </div>
       </td>
       <td>
@@ -76,6 +76,16 @@
       <td>
         <div class="action-buttons">
           @if (isAdmin()) {
+            @if (item.status !== TaskItemStatus.Done) {
+              <p-button
+                icon="pi pi-check"
+                severity="success"
+                [text]="true"
+                [rounded]="true"
+                (click)="onCompleteTask(item)"
+                pTooltip="Mark as Done"
+              ></p-button>
+            }
             <p-button
               icon="pi pi-pencil"
               severity="info"

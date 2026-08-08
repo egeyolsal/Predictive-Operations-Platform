@@ -25,6 +25,7 @@ export class Tasks implements OnInit {
   private readonly auth = inject(Auth);
 
   readonly isAdmin = computed(() => this.auth.role() === 'Admin');
+  readonly isAnalyst = computed(() => this.auth.role() === 'Analyst');
 
   readonly items = signal<TaskItem[]>([]);
   readonly isLoading = signal(true);
@@ -194,6 +195,14 @@ export class Tasks implements OnInit {
 
   isCriticalStockTask(task: TaskItem): boolean {
     return !!task.title && task.title.includes('Kritik Stok Uyarısı');
+  }
+
+  isAnomalousTask(task: TaskItem): boolean {
+    return task.isAnomalous === true;
+  }
+
+  showAnomalyWarning(task: TaskItem): boolean {
+    return (this.isCriticalStockTask(task) || this.isAnomalousTask(task)) && (this.isAdmin() || this.isAnalyst());
   }
 
   extractSupplierEmail(description: string | null | undefined): string | null {

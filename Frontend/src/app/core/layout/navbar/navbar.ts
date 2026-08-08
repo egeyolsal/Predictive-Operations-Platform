@@ -121,6 +121,7 @@ export class Navbar implements OnInit {
         const unreadList = data.filter(n => !this.readNotificationIds.has(n.id));
         this.notifications.set(data.map(n => ({
           ...n,
+          date: (n.date && !n.date.endsWith('Z')) ? n.date + 'Z' : n.date,
           isRead: this.readNotificationIds.has(n.id)
         })));
         this.unreadCount.set(unreadList.length);
