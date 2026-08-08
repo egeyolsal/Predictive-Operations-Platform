@@ -13,10 +13,12 @@ namespace TaskInventoryApi.Controllers;
 public class InvoiceController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStockPredictionService _stockPredictionService;
 
-    public InvoiceController(IUnitOfWork unitOfWork)
+    public InvoiceController(IUnitOfWork unitOfWork, IStockPredictionService stockPredictionService)
     {
         _unitOfWork = unitOfWork;
+        _stockPredictionService = stockPredictionService;
     }
 
     [HttpGet]
@@ -135,42 +137,6 @@ public class InvoiceController : ControllerBase
             else // Outbound or InternalConsumption
             {
                 inventoryItem.CurrentStock -= lineItemDto.Quantity;
-
-                // Check Critical Threshold
-                if (inventoryItem.CurrentStock < inventoryItem.CriticalThreshold)
-                {
-                    // Find an Admin user to assign the task to
-                    var adminUsers = await _unitOfWork.Users.FindAsync(u => u.Role == UserRole.Admin);
-                    var adminUser = adminUsers.FirstOrDefault();
-                    
-                    // Find the optimum supplier (Lowest Price)
-                    string supplierInfo = "Optimum tedarikçi bulunamadı (Ürüne atanmış tedarikçi yok).";
-                    
-                    var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(isup => isup.InventoryItemId == inventoryItem.Id);
-                    var optimumItemSupplier = itemSuppliers.OrderBy(isup => isup.Price).FirstOrDefault();
-
-                    if (optimumItemSupplier != null)
-                    {
-                        var supplier = await _unitOfWork.Suppliers.GetByIdAsync(optimumItemSupplier.SupplierId);
-                        if (supplier != null)
-                        {
-                            supplierInfo = $"Optimum Tedarikçi: {supplier.Name} (Fiyat: {optimumItemSupplier.Price} TL, İletişim: {supplier.ContactName ?? "-"}, Tel: {supplier.Phone ?? "-"})";
-                        }
-                    }
-
-                    var reorderTask = new TaskItem
-                    {
-                        Title = $"⚠️ ACİL: '{inventoryItem.Name}' için Stok Kritik Seviyede",
-                        Description = $"Fatura çıkışı sonrası ürün stoğu {inventoryItem.CurrentStock} adede düşmüştür (Kritik Eşik: {inventoryItem.CriticalThreshold}). Lütfen acilen satın alma işlemlerini başlatın.\n\n**{supplierInfo}**",
-                        Status = TaskItemStatus.ToDo,
-                        AssignedUserId = adminUser != null ? adminUser.Id : 1, // Fallback to 1 if no admin found
-                        CategoryId = 1, // Fallback category
-                        ExpectedDurationHours = 2,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    
-                    await _unitOfWork.TaskItems.AddAsync(reorderTask);
-                }
             }
             _unitOfWork.InventoryItems.Update(inventoryItem);
 
@@ -185,9 +151,19 @@ public class InvoiceController : ControllerBase
             invoice.LineItems.Add(lineItem);
         }
 
-        // 6. Save everything in a single transaction (Unit of Work)
+        // 6. Save everything in a single transaction (Unit of Work) BEFORE Analytics
         await _unitOfWork.Invoices.AddAsync(invoice);
         await _unitOfWork.SaveChangesAsync();
+
+        // 7. Run Analytics AFTER saving so transactions are included
+        foreach (var lineItemDto in dto.LineItems)
+        {
+            if (dto.Type == InvoiceType.Outbound || dto.Type == InvoiceType.InternalConsumption)
+            {
+                var inventoryItem = inventoryItems[lineItemDto.InventoryItemId];
+                await _stockPredictionService.EvaluateStockAndCreateAlertsAsync(inventoryItem, 0, 1);
+            }
+        }
 
         // 7. Map to Response
         Customer? customer = null;

@@ -116,7 +116,11 @@ export class TasksForm implements OnInit {
     this.isMaterialsLoading.set(true);
     this.tasksApi.getTaskMaterials(taskId).subscribe({
       next: (data) => {
-        this.taskMaterials.set(data);
+        const formattedData = data.map(m => ({
+          ...m,
+          transactionDate: (m.transactionDate && !m.transactionDate.endsWith('Z')) ? m.transactionDate + 'Z' : m.transactionDate
+        }));
+        this.taskMaterials.set(formattedData);
         this.isMaterialsLoading.set(false);
         this.cdr.detectChanges();
       },

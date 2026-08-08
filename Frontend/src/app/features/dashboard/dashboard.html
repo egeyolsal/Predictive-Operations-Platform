@@ -144,5 +144,57 @@
         </div>
       </div>
     }
+
+    <!-- STATISTICAL INVENTORY FORECAST (Admin & Analyst only) -->
+    @if (auth.role() === 'Admin' || auth.role() === 'Analyst') {
+      <div class="widget-card col-span-full">
+        <div class="widget-header">
+          <h3>Statistical Inventory Forecast</h3>
+          <span class="subtitle">Moving Average Projection</span>
+        </div>
+        <div class="widget-body">
+          @if (stockPredictions().length) {
+            <p-table [value]="stockPredictions()" [paginator]="true" [rows]="5" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Product Name</th>
+                  <th>Current Stock</th>
+                  <th>Velocity (Qty/Day)</th>
+                  <th>Days Until Critical</th>
+                  <th>Days Until Empty</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-pred>
+                <tr [ngClass]="{'bg-red-50 text-red-900 font-bold': pred.isCritical}">
+                  <td>{{ pred.inventoryItemName }}</td>
+                  <td>
+                    <span class="p-badge" [ngClass]="pred.currentStock <= pred.criticalThreshold ? 'p-badge-danger' : 'p-badge-success'">
+                      {{ pred.currentStock }}
+                    </span>
+                  </td>
+                  <td>{{ pred.dailyConsumptionRate | number:'1.1-2' }}</td>
+                  <td>
+                    @if (pred.daysUntilCritical === null) {
+                      <span class="text-green-500 font-medium">Safe (No Cons.)</span>
+                    } @else {
+                      {{ pred.daysUntilCritical | number:'1.0-1' }}
+                    }
+                  </td>
+                  <td>
+                    @if (pred.daysUntilZero === null) {
+                      <span class="text-green-500 font-medium">Safe (No Cons.)</span>
+                    } @else {
+                      {{ pred.daysUntilZero | number:'1.0-1' }}
+                    }
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          } @else {
+            <div class="text-center p-4 text-500">No forecast data available</div>
+          }
+        </div>
+      </div>
+    }
   </div>
 }

@@ -35,29 +35,27 @@ public class NotificationsController : ControllerBase
         var notifications = new List<NotificationDto>();
         var now = DateTime.UtcNow;
 
-        if (userRole == UserRole.Worker.ToString() || userRole == UserRole.Analyst.ToString())
-        {
-            // Fetch tasks assigned to the worker that are in ToDo state
-            var myTasks = await _context.TaskItems
-                .AsNoTracking()
-                .Where(t => t.AssignedUserId == userId && t.Status == TaskItemStatus.ToDo)
-                .OrderByDescending(t => t.CreatedAt)
-                .Take(5)
-                .ToListAsync();
+        // Fetch tasks assigned to the current user (ANY role) that are in ToDo state
+        var myTasks = await _context.TaskItems
+            .AsNoTracking()
+            .Where(t => t.AssignedUserId == userId && t.Status == TaskItemStatus.ToDo)
+            .OrderByDescending(t => t.CreatedAt)
+            .Take(5)
+            .ToListAsync();
 
-            foreach (var t in myTasks)
+        foreach (var t in myTasks)
+        {
+            notifications.Add(new NotificationDto
             {
-                notifications.Add(new NotificationDto
-                {
-                    Id = $"task_new_{t.Id}",
-                    Type = "task",
-                    Message = $"New task assigned: {t.Title}",
-                    Link = "/tasks",
-                    Date = t.CreatedAt
-                });
-            }
+                Id = $"task_new_{t.Id}",
+                Type = "task",
+                Message = $"New task assigned: {t.Title}",
+                Link = "/tasks",
+                Date = t.CreatedAt
+            });
         }
-        else if (userRole == UserRole.Admin.ToString())
+
+        if (userRole == UserRole.Admin.ToString())
         {
             // Low stock alerts
             var lowStockItems = await _context.InventoryItems
@@ -100,25 +98,10 @@ public class NotificationsController : ControllerBase
                 });
             }
             
-            // Unassigned ToDo Tasks
-            var unassignedTasks = await _context.TaskItems
-                .AsNoTracking()
-                .Where(t => t.Status == TaskItemStatus.ToDo && t.AssignedUserId == null)
-                .OrderByDescending(t => t.CreatedAt)
-                .Take(3)
-                .ToListAsync();
-                
-            foreach (var t in unassignedTasks)
-            {
-                notifications.Add(new NotificationDto
-                {
-                    Id = $"task_unassigned_{t.Id}",
-                    Type = "task",
-                    Message = $"Unassigned task waiting: {t.Title}",
-                    Link = "/tasks",
-                    Date = t.CreatedAt
-                });
-            }
+            // Unassigned ToDo Tasks (Warning CS0472 fixed by ignoring this query or changing to logic)
+            // AssignedUserId is 'int' and cannot be null. Since we don't allow unassigned tasks currently,
+            // we can remove this block or check for ID = 0 if that's the default.
+            // Let's remove this block since AssignedUserId is required.
         }
 
         // Sort all aggregated notifications by date descending

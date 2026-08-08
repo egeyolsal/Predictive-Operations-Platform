@@ -15,11 +15,13 @@ public class TaskController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITaskAnomalyService _anomalyService;
+    private readonly IStockPredictionService _stockPredictionService;
 
-    public TaskController(IUnitOfWork unitOfWork, ITaskAnomalyService anomalyService)
+    public TaskController(IUnitOfWork unitOfWork, ITaskAnomalyService anomalyService, IStockPredictionService stockPredictionService)
     {
         _unitOfWork = unitOfWork;
         _anomalyService = anomalyService;
+        _stockPredictionService = stockPredictionService;
     }
 
     [HttpGet]
@@ -228,70 +230,11 @@ public class TaskController : ControllerBase
         invoice.LineItems.Add(lineItem);
         await _unitOfWork.Invoices.AddAsync(invoice);
 
-        // 5. Update Stock & Check Critical Threshold
+        // 5. Update Stock
         inventoryItem.CurrentStock -= dto.Quantity;
         _unitOfWork.InventoryItems.Update(inventoryItem);
 
-        // --- PREDICTIVE ANALYTICS ALGORITHM ---
-        // 5.1 Calculate Daily Consumption (Velocity) over the last 30 days
-        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-        var pastTransactions = await _unitOfWork.InventoryTransactions.FindAsync(
-            it => it.InventoryItemId == inventoryItem.Id && it.TransactionDate >= thirtyDaysAgo);
-        
-        int totalConsumedIn30Days = pastTransactions.Sum(it => it.QuantityUsed) + dto.Quantity;
-        double dailyConsumptionRate = totalConsumedIn30Days / 30.0;
-
-        // 5.2 Calculate Days Until Stockout
-        double daysUntilStockOut = 999;
-        if (dailyConsumptionRate > 0)
-        {
-            daysUntilStockOut = inventoryItem.CurrentStock / dailyConsumptionRate;
-        }
-
-        // 5.3 Fetch Supplier Info & Lead Time (Already fetched above)
-        int leadTimeDays = optimumItemSupplier?.LeadTimeDays ?? 3; // Default 3 days
-
-        // 5.4 Decision: Is it critical? (Stock runs out before supplier can deliver, OR stock out in < 3 days)
-        bool isCritical = (daysUntilStockOut <= leadTimeDays) || (daysUntilStockOut <= 3.0) || (inventoryItem.CurrentStock < inventoryItem.CriticalThreshold);
-
-        if (isCritical && inventoryItem.CurrentStock > 0)
-        {
-            var adminUsers = await _unitOfWork.Users.FindAsync(u => u.Role == UserRole.Admin);
-            var adminUser = adminUsers.FirstOrDefault();
-            int assignedUserId = adminUser?.Id ?? task.AssignedUserId;
-
-            string supplierInfo = "Optimum tedarikçi bulunamadı.";
-            if (optimumItemSupplier != null)
-            {
-                var supplier = await _unitOfWork.Suppliers.GetByIdAsync(optimumItemSupplier.SupplierId);
-                if (supplier != null)
-                {
-                    supplierInfo = $"Önerilen Tedarikçi: {supplier.Name} (Fiyat: {optimumItemSupplier.Price} TL)\nE-posta: {supplier.Email ?? "bulunamadi@tedarik.com"}\nLead Time: {optimumItemSupplier.LeadTimeDays} Gün";
-                }
-            }
-
-            var reorderTask = new TaskItem
-            {
-                Title = $"🚨 Kritik Stok Uyarısı: {inventoryItem.Name}",
-                Description = $"**🤖 YAPAY ZEKA STOK ÖNGÖRÜSÜ (PREDICTIVE ANALYTICS)**\n\n" +
-                              $"- **Son 30 Gün Tüketim:** {totalConsumedIn30Days} adet\n" +
-                              $"- **Günlük Tüketim Hızı (Velocity):** {Math.Round(dailyConsumptionRate, 2)} adet/gün\n" +
-                              $"- **Tahmini Tükenme Süresi:** {Math.Round(daysUntilStockOut, 1)} gün kaldı!\n\n" +
-                              $"Sistem, mevcut {inventoryItem.CurrentStock} adet stoğun operasyonları aksatacak kadar hızlı tükendiğini tespit etti. Lütfen aşağıdaki bilgileri kullanarak derhal sipariş geçiniz.\n\n" +
-                              $"---\n**Tedarikçi Analizi:**\n{supplierInfo}",
-                Status = TaskItemStatus.ToDo,
-                Priority = TaskPriority.High,
-                AssignedUserId = assignedUserId,
-                CategoryId = task.CategoryId,
-                ExpectedDurationHours = 1,
-                IsAnomalous = true,
-                CreatedAt = DateTime.UtcNow
-            };
-            
-            await _unitOfWork.TaskItems.AddAsync(reorderTask);
-        }
-
-        // 6. Record Inventory Transaction (Optional but good for history)
+        // 6. Record Inventory Transaction
         var transaction = new InventoryTransaction
         {
             TaskItemId = task.Id,
@@ -300,11 +243,15 @@ public class TaskController : ControllerBase
             TransactionDate = DateTime.UtcNow
         };
         await _unitOfWork.InventoryTransactions.AddAsync(transaction);
-
-        // 7. Save Transaction
+        
+        // Save these changes to the database BEFORE calculating the moving average
+        // so the new transaction is included in the velocity calculation
         await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Material consumed successfully.", InvoiceNumber = invoice.InvoiceNumber });
+        // --- PREDICTIVE ANALYTICS ALGORITHM ---
+        await _stockPredictionService.EvaluateStockAndCreateAlertsAsync(inventoryItem, task.Id, task.AssignedUserId);
+
+        return Ok(new { Message = $"Consumed {dto.Quantity} of {inventoryItem.Name} for task {task.Id}.", InvoiceNumber = invoice.InvoiceNumber });
     }
 
     private static TaskResponseDto MapToResponseDto(TaskItem task) => new()

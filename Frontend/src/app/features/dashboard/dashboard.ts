@@ -3,26 +3,31 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TableModule } from 'primeng/table';
+import { BadgeModule } from 'primeng/badge';
 import { DashboardApi } from './dashboard-api';
 import { DashboardDto } from './dashboard.models';
+import { AnalyticsService, StockPredictionDto } from '../../core/services/analytics.service';
 import { Auth } from '../../core/auth/auth';
 import { NotificationService, NotificationDto } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, ChartModule, SkeletonModule],
+  imports: [CommonModule, RouterLink, ChartModule, SkeletonModule, TableModule, BadgeModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnInit {
   private readonly dashboardApi = inject(DashboardApi);
   private readonly notificationService = inject(NotificationService);
+  private readonly analyticsService = inject(AnalyticsService);
   readonly auth = inject(Auth);
 
   readonly data = signal<DashboardDto | null>(null);
   readonly isLoading = signal(true);
   readonly notifications = signal<NotificationDto[]>([]);
+  readonly stockPredictions = signal<StockPredictionDto[]>([]);
 
   // Chart configuration
   readonly lineChartData = computed(() => {
@@ -127,5 +132,14 @@ export class Dashboard implements OnInit {
       },
       error: (err) => console.error(err)
     });
+
+    if (this.auth.role() === 'Admin' || this.auth.role() === 'Analyst') {
+      this.analyticsService.getStockPredictions().subscribe({
+        next: (predictions) => {
+          this.stockPredictions.set(predictions);
+        },
+        error: (err) => console.error(err)
+      });
+    }
   }
 }

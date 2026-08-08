@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, interval } from 'rxjs';
 import { ToolbarModule } from 'primeng/toolbar';
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
@@ -45,7 +45,12 @@ export class Navbar implements OnInit {
       this.updatePageTitle(event.urlAfterRedirects);
     });
 
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
+    const pollSub = interval(15000).subscribe(() => this.loadNotifications());
+
+    this.destroyRef.onDestroy(() => {
+      sub.unsubscribe();
+      pollSub.unsubscribe();
+    });
     this.menuItems = [
       {
         label: 'Profile',

@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
+import { interval } from 'rxjs';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +24,7 @@ export class Tasks implements OnInit {
   private readonly tasksApi = inject(TasksApi);
   private readonly messageService = inject(MessageService);
   private readonly auth = inject(Auth);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly isAdmin = computed(() => this.auth.role() === 'Admin');
   readonly isAnalyst = computed(() => this.auth.role() === 'Analyst');
@@ -53,10 +55,14 @@ export class Tasks implements OnInit {
 
   ngOnInit(): void {
     this.loadItems();
+    const pollSub = interval(15000).subscribe(() => this.loadItems(true));
+    this.destroyRef.onDestroy(() => pollSub.unsubscribe());
   }
 
-  loadItems(): void {
-    this.isLoading.set(true);
+  loadItems(isPolling = false): void {
+    if (!isPolling) {
+      this.isLoading.set(true);
+    }
     this.tasksApi.getAll().subscribe({
       next: (data) => {
         const formattedData = data.map(item => ({

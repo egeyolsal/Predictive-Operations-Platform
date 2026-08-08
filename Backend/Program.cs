@@ -52,6 +52,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, DevelopmentEmailService>();
 builder.Services.AddScoped<ITaskAnomalyService, TaskAnomalyService>();
 builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
+builder.Services.AddScoped<IStockPredictionService, StockPredictionService>();
 
 builder.Services.AddAuthentication(options =>
 {
