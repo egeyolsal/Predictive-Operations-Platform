@@ -47,8 +47,11 @@
   }
 
   <!-- Toggle Button -->
-  <button pButton class="chat-toggle-btn shadow-6" 
-          [icon]="isOpen() ? 'pi pi-times' : 'pi pi-comments'" 
-          (click)="toggleChat()">
+  <button pButton class="chat-toggle-btn shadow-6" (click)="toggleChat()">
+    @if (isOpen()) {
+      <i class="pi pi-times"></i>
+    } @else {
+      <img src="assets/logo.png" alt="AI" class="toggle-logo" />
+    }
   </button>
 </div>

@@ -105,8 +105,13 @@ export class Navbar implements OnInit {
     return `${serverUrl}${url}`;
   }
 
+  private getStorageKey(): string {
+    const username = this.auth.username() || 'anonymous';
+    return `read_notifications_${username}`;
+  }
+
   private loadReadNotifications() {
-    const saved = localStorage.getItem('read_notifications');
+    const saved = localStorage.getItem(this.getStorageKey());
     if (saved) {
       try {
         const ids = JSON.parse(saved);
@@ -140,7 +145,7 @@ export class Navbar implements OnInit {
   onNotificationClick(notification: NotificationDto) {
     if (!this.readNotificationIds.has(notification.id)) {
       this.readNotificationIds.add(notification.id);
-      localStorage.setItem('read_notifications', JSON.stringify(Array.from(this.readNotificationIds)));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(Array.from(this.readNotificationIds)));
       
       this.notifications.update(current => 
         current.map(n => n.id === notification.id ? { ...n, isRead: true } : n)

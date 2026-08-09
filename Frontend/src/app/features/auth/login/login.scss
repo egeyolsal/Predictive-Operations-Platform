@@ -12,15 +12,25 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background: #f0f2ff;
+  /* Tüm sayfayı kaplayan modern ve birleştirici arka plan */
+  background:
+    radial-gradient(ellipse at 75% 30%, rgba(167, 174, 255, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 90% 80%, rgba(255, 171, 64, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 15% 60%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #f0f2ff 0%, #e6e9ff 100%);
   animation: fadeIn 0.55s ease forwards;
   position: relative;
   overflow: hidden;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* =============================================
@@ -28,14 +38,10 @@
    ============================================= */
 .right-bg {
   position: absolute;
-  inset: 0 0 0 40%;           /* covers the right 60% */
-  background:
-    radial-gradient(ellipse at 60% 40%, rgba(167,174,255,0.35) 0%, transparent 65%),
-    radial-gradient(ellipse at 80% 80%, rgba(255,171,64,0.18) 0%, transparent 50%),
-    linear-gradient(145deg, #eef0ff 0%, #e8ebff 50%, #f0eeff 100%);
+  inset: 0 0 0 40%;
+  /* Arka planı tamamen kaldırdık, renk tüm sayfaya yayıldı. */
   overflow: hidden;
 
-  /* The SVG is positioned to fill this background */
   img.bg-illustration {
     position: absolute;
     top: 50%;
@@ -46,16 +52,26 @@
     object-fit: contain;
     opacity: 1;
     pointer-events: none;
+    border-radius: 24px; /* Kenarları yumuşatmak için formla aynı kavis eklendi */
     /* Subtle animation */
     animation: floatBg 8s ease-in-out infinite;
   }
 
-  @media (max-width: 768px) { display: none; }
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 @keyframes floatBg {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-  50%       { transform: translate(-50%, -50%) translateY(-12px); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-12px);
+  }
 }
 
 /* =============================================
@@ -71,7 +87,10 @@
   padding: 48px 0;
   min-height: 100vh;
 
-  @media (max-width: 992px) { flex: 0 0 55%; }
+  @media (max-width: 992px) {
+    flex: 0 0 55%;
+  }
+
   @media (max-width: 768px) {
     flex: 1;
     padding: 32px 16px;
@@ -82,18 +101,29 @@
 
 /* Glass card that holds the form */
 .form-card {
-  background: #ffffff;
-  border-radius: 20px;
+  /* Premium Buzlu Cam (Glassmorphism) Efekti */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
   padding: 44px 48px;
   width: 100%;
   max-width: 400px;
   box-shadow:
-    0 4px 6px rgba(99,102,241,0.04),
-    0 20px 50px rgba(99,102,241,0.10),
-    0 1px 0 rgba(255,255,255,0.8) inset;
+    0 20px 50px rgba(99, 102, 241, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
 
-  @media (max-width: 1100px) { padding: 36px 36px; max-width: 370px; }
-  @media (max-width: 768px)  { box-shadow: none; padding: 0; max-width: 100%; }
+  @media (max-width: 1100px) {
+    padding: 36px 36px;
+    max-width: 370px;
+  }
+
+  @media (max-width: 768px) {
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+  }
 }
 
 /* Logo */
@@ -121,45 +151,7 @@
   line-height: 1.5;
 }
 
-/* =============================================
-   GOOGLE BUTTON
-   ============================================= */
-.btn-google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  height: 46px;
-  background: #fff;
-  border: 1.5px solid #e0e3ef;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
-  margin-bottom: 26px;
-  outline: none;
-  font-family: inherit;
 
-  &:hover {
-    border-color: #a5b4fc;
-    box-shadow: 0 2px 12px rgba(99,102,241,0.12);
-    transform: translateY(-1px);
-  }
-
-  &:active { transform: translateY(0); }
-
-  .g-logo {
-    font-weight: 700;
-    font-size: 15px;
-    background: linear-gradient(135deg, #4285F4 0%, #EA4335 33%, #FBBC05 66%, #34A853 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-}
 
 /* =============================================
    FORM FIELDS
@@ -184,22 +176,24 @@
 
   input.text-input {
     height: 46px;
-    background: #f8f9ff;
-    border: 1.5px solid #e2e4f0;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1.5px solid rgba(226, 228, 240, 0.8);
+    border-radius: 12px;
     padding: 0 14px;
     font-size: 14px;
     color: #0f172a;
     font-family: inherit;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    transition: all 0.3s ease;
 
-    &::placeholder { color: #a0aec0; }
+    &::placeholder {
+      color: #94a3b8;
+    }
 
     &:focus {
       background: #fff;
       border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.14);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
     }
   }
 }
@@ -210,7 +204,10 @@
   display: flex;
   align-items: center;
 
-  input.text-input { flex: 1; padding-right: 44px; }
+  input.text-input {
+    flex: 1;
+    padding-right: 44px;
+  }
 
   .eye-btn {
     position: absolute;
@@ -225,7 +222,9 @@
     align-items: center;
     transition: color 0.2s;
 
-    &:hover { color: #6366f1; }
+    &:hover {
+      color: #6366f1;
+    }
   }
 }
 
@@ -251,7 +250,10 @@
       cursor: pointer;
     }
 
-    span { font-size: 13.5px; color: #4b5563; }
+    span {
+      font-size: 13.5px;
+      color: #4b5563;
+    }
   }
 
   .forgot {
@@ -261,7 +263,9 @@
     text-decoration: none;
     transition: color 0.2s;
 
-    &:hover { color: #6366f1; }
+    &:hover {
+      color: #6366f1;
+    }
   }
 }
 
@@ -286,28 +290,40 @@
   gap: 8px;
   margin-bottom: 20px;
   outline: none;
-  box-shadow: 0 4px 14px rgba(15,23,42,0.20);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.20);
 
   &:hover {
     background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
-    box-shadow: 0 6px 20px rgba(15,23,42,0.30);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.30);
     transform: translateY(-1px);
   }
 
-  &:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(15,23,42,0.15); }
-  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 
   .spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* =============================================
    REGISTER LINK
@@ -320,7 +336,11 @@
     font-weight: 700;
     color: #0f172a;
     text-decoration: none;
-    &:hover { color: #6366f1; text-decoration: underline; }
+
+    &:hover {
+      color: #6366f1;
+      text-decoration: underline;
+    }
   }
 }
 
