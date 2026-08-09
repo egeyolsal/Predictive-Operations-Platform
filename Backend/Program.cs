@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskInventoryApi.Data;
 using TaskInventoryApi.Repositories;
 using QuestPDF.Infrastructure;
+using Backend.Services;
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -75,6 +76,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// HttpClientFactory pattern ile servisi kaydediyoruz
+builder.Services.AddHttpClient<IAiAssistantService, GeminiAssistantService>();
 
 builder.Services.AddCors(options =>
 {

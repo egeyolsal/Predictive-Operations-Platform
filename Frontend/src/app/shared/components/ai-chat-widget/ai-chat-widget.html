@@ -1,0 +1,54 @@
+<div class="chat-widget-container" [class.open]="isOpen()">
+  <!-- Chat Window -->
+  @if (isOpen()) {
+    <div class="chat-window shadow-6">
+      <div class="chat-header">
+        <div class="header-title">
+          <img src="assets/logo.png" alt="Worksight Logo" class="header-logo" />
+          <span>Worksight AI</span>
+        </div>
+        <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-sm text-white" (click)="toggleChat()"></button>
+      </div>
+      
+      <div class="chat-body" #chatScroll>
+        @for (msg of messages(); track $index) {
+          <div class="message-wrapper" [class.user]="msg.role === 'user'" [class.ai]="msg.role === 'ai'">
+            @if (msg.role === 'ai') {
+              <div class="avatar-ai"><img src="assets/logo.png" alt="AI" /></div>
+            }
+            <div class="message-bubble" [class.error]="msg.isError">
+              @if (msg.role === 'ai' && msg.safeContent) {
+                <div [innerHTML]="msg.safeContent" class="markdown-content"></div>
+              } @else {
+                <div class="plain-text">{{ msg.content }}</div>
+              }
+            </div>
+          </div>
+        }
+        
+        @if (isLoading()) {
+          <div class="message-wrapper ai">
+            <div class="avatar-ai"><img src="assets/logo.png" alt="AI" /></div>
+            <div class="message-bubble loading">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="chat-footer">
+        <input type="text" pInputText placeholder="Ask the AI something..." 
+               [ngModel]="currentMessage()" (ngModelChange)="currentMessage.set($event)" 
+               (keydown.enter)="sendMessage()" [disabled]="isLoading()" />
+        <button pButton icon="pi pi-send" class="p-button-rounded" 
+                (click)="sendMessage()" [disabled]="!currentMessage().trim() || isLoading()"></button>
+      </div>
+    </div>
+  }
+
+  <!-- Toggle Button -->
+  <button pButton class="chat-toggle-btn shadow-6" 
+          [icon]="isOpen() ? 'pi pi-times' : 'pi pi-comments'" 
+          (click)="toggleChat()">
+  </button>
+</div>
