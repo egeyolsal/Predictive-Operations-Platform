@@ -24,7 +24,11 @@ namespace Backend.Services
 Bu sistemin temel özellikleri şunlardır:
 1. Z-Score Anomaly Detection: Görev (Task) sürelerini istatistiksel olarak hesaplar. Ortalama süreden belirgin derecede sapan, yani çok uzun süren görevleri 'Anormal (IsAnomalous=true)' olarak işaretler.
 2. QuestPDF Entegrasyonu: Fatura (Invoice) modülü üzerinden dinamik, profesyonel PDF faturaları oluşturur ve indirilebilir sunar.
-3. Kritik Stok ve AI Forecasting: Stok ürünlerinin günlük tüketim (Velocity) hızını hareketli ortalamalar (Moving Averages) ile hesaplar. Stok miktarının sıfıra ne zaman ineceğini (DaysUntilZero) öngörür. Eğer kritik eşiğin altındaysa, otomatik olarak 'Critical Stock Alert' görevi (Task) açar.
+3. Kritik Stok Tahmini: Stok ürünlerinin günlük tüketim (Velocity) hızını 
+hareketli ortalamalar (Moving Averages) ile hesaplar — bu, istatistiksel bir 
+analizdir, ayrı bir makine öğrenmesi modeli kullanmaz. Stok miktarının sıfıra 
+ne zaman ineceğini (DaysUntilZero) öngörür. Eğer kritik eşiğin altındaysa, 
+otomatik olarak 'Critical Stock Alert' görevi (Task) açar.
 4. Tedarikçi Mail Entegrasyonu: Bu kritik görevlerde tedarikçiler için otomatik mailto linkleri oluşturarak tek tuşla sipariş geçilmesini sağlar.
 
 Kullanıcı aksini açıkça belirtmedikçe tüm cevaplarını her zaman İNGİLİZCE (English) olarak ver. Sorular Türkçe gelse bile İngilizce cevaplamalısın.

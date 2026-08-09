@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Threading.RateLimiting;
+using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -80,6 +82,28 @@ builder.Services.AddAuthorization();
 // HttpClientFactory pattern ile servisi kaydediyoruz
 builder.Services.AddHttpClient<IAiAssistantService, GeminiAssistantService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("ai-assistant", context =>
+    {
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 15,
+            Window = TimeSpan.FromMinutes(10),
+            QueueLimit = 0
+        });
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync(
+            "Too many requests. Please wait a moment before asking again.", token);
+    };
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDev", policy =>
@@ -123,6 +147,9 @@ app.UseCors("AllowAngularDev");
 app.UseStaticFiles();
 
 app.UseAuthentication(); // Authentication middleware should be added before Authorization middleware.
+
+app.UseRateLimiter();
+
 app.UseAuthorization();
 app.MapControllers();
 
