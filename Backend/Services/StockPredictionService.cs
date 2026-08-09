@@ -16,13 +16,23 @@ public class StockPredictionService : IStockPredictionService
     public async Task<StockPredictionDto> CalculatePredictionAsync(InventoryItem item)
     {
         var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+        var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
         
         // Sadece son 30 günün hareketlerini getir
         var pastTransactions = await _unitOfWork.InventoryTransactions.FindAsync(
             it => it.InventoryItemId == item.Id && it.TransactionDate >= thirtyDaysAgo);
         
-        int totalConsumedIn30Days = pastTransactions.Sum(it => it.QuantityUsed);
-        double dailyConsumptionRate = totalConsumedIn30Days / 30.0;
+        // V_son_7_gun hesaplama (Son 7 gündeki tüketim hızı)
+        var last7DaysTransactions = pastTransactions.Where(t => t.TransactionDate >= sevenDaysAgo).ToList();
+        double vLast7 = last7DaysTransactions.Sum(it => it.QuantityUsed) / 7.0;
+
+        // V_onceki_23_gun hesaplama (Önceki 23 gündeki tüketim hızı)
+        var previous23DaysTransactions = pastTransactions.Where(t => t.TransactionDate < sevenDaysAgo).ToList();
+        double vPrev23 = previous23DaysTransactions.Sum(it => it.QuantityUsed) / 23.0;
+
+        // V_predictive (Ağırlıklı Hareketli Ortalama - Weighted Moving Average)
+        // Son 7 günün ağırlığı %70, önceki 23 günün ağırlığı %30
+        double dailyConsumptionRate = (vLast7 * 0.70) + (vPrev23 * 0.30);
 
         var dto = new StockPredictionDto
         {
