@@ -24,6 +24,8 @@ export interface TaskItem {
   completedAt?: string;
   expectedDurationHours: number;
   isAnomalous: boolean;
+  isSystemGenerated: boolean;
+  relatedInventoryItemId?: number;
 }
 
 export interface TaskCreateDto {

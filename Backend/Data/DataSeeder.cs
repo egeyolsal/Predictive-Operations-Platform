@@ -11,8 +11,8 @@ public static class DataSeeder
 
     public static async Task SeedAsync(ApplicationDbContext context, ITaskAnomalyService anomalyService)
     {
-        await context.Database.EnsureCreatedAsync();
-
+        // NOTE: Migrations must be applied BEFORE seeding. Run 'dotnet ef database update' first.
+        // EnsureCreatedAsync() is intentionally NOT used here as it conflicts with EF Core migrations.
         if (await context.Users.AnyAsync())
         {
             Console.WriteLine("DB already contains data, skipping seed.");

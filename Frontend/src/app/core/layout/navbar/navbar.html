@@ -34,7 +34,7 @@
                     'pi-check-circle text-green-500': notif.type === 'task',
                     'pi-bolt text-red-500': notif.type === 'prediction'
                   }"></i>
-                  <span class="text-sm text-600">{{ notif.date | date:'short' }}</span>
+                  <span class="text-sm text-600">{{ getRelativeTime(notif.date) }}</span>
                   @if (!notif.isRead) {
                     <span class="w-1rem h-1rem border-circle bg-red-500 ml-auto"></span>
                   }

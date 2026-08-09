@@ -6,7 +6,9 @@ import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DatePipe } from '@angular/common';
 import { TasksApi } from './tasks-api';
 import { TaskItem, TaskItemStatus, TaskPriority } from './tasks.models';
@@ -15,14 +17,15 @@ import { Auth } from '../../core/auth/auth';
 
 @Component({
   selector: 'app-tasks',
-  imports: [CommonModule, TableModule, TagModule, InputTextModule, ButtonModule, ToastModule, TasksForm, DatePipe],
-  providers: [MessageService],
+  imports: [CommonModule, TableModule, TagModule, InputTextModule, ButtonModule, ToastModule, TooltipModule, ConfirmDialogModule, TasksForm, DatePipe],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './tasks.html',
   styleUrl: './tasks.scss',
 })
 export class Tasks implements OnInit {
   private readonly tasksApi = inject(TasksApi);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly auth = inject(Auth);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -109,50 +112,60 @@ export class Tasks implements OnInit {
   }
 
   onDelete(item: TaskItem): void {
-    if (!confirm(`Delete task "${item.title}"? This cannot be undone.`)) {
-      return;
-    }
-
-    this.tasksApi.delete(item.id).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Task deleted successfully.',
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete "${item.title}"? This action cannot be undone.`,
+      header: 'Delete Task',
+      icon: 'pi pi-trash',
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      accept: () => {
+        this.tasksApi.delete(item.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Task deleted successfully.',
+            });
+            this.loadItems();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to delete task.',
+            });
+          },
         });
-        this.loadItems();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to delete task.',
-        });
-      },
+      }
     });
   }
 
   onCompleteTask(item: TaskItem): void {
-    if (!confirm(`Mark task "${item.title}" as completed?`)) {
-      return;
-    }
-
-    this.tasksApi.updateStatus(item.id, TaskItemStatus.Done).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Task marked as completed.',
+    this.confirmationService.confirm({
+      message: `Mark "${item.title}" as completed? This will record the completion time.`,
+      header: 'Complete Task',
+      icon: 'pi pi-check-circle',
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptButtonProps: { label: 'Mark as Done', severity: 'success' },
+      accept: () => {
+        this.tasksApi.updateStatus(item.id, TaskItemStatus.Done).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Task marked as completed.',
+            });
+            this.loadItems();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to update task status.',
+            });
+          },
         });
-        this.loadItems();
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to update task status.',
-        });
-      },
+      }
     });
   }
 
@@ -200,16 +213,23 @@ export class Tasks implements OnInit {
     }
   }
 
-  isCriticalStockTask(task: TaskItem): boolean {
-    return !!task.title && task.title.includes('Kritik Stok Uyarısı');
-  }
-
   isAnomalousTask(task: TaskItem): boolean {
     return task.isAnomalous === true;
   }
 
+  isSystemAlert(task: TaskItem): boolean {
+    return task.isSystemGenerated === true;
+  }
+
   showAnomalyWarning(task: TaskItem): boolean {
-    return (this.isCriticalStockTask(task) || this.isAnomalousTask(task)) && (this.isAdmin() || this.isAnalyst());
+    return (task.isAnomalous || task.isSystemGenerated) && (this.isAdmin() || this.isAnalyst());
+  }
+
+  getAnomalyTooltip(task: TaskItem): string {
+    if (task.isAnomalous && task.isSystemGenerated) return 'Anomaly Detected & System Alert';
+    if (task.isAnomalous) return 'Anomaly Detected';
+    if (task.isSystemGenerated) return 'System Alert';
+    return '';
   }
 
   getActualDurationHours(task: TaskItem): string | null {

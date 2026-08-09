@@ -268,6 +268,8 @@ public class TaskController : ControllerBase
         CreatedAt = task.CreatedAt,
         CompletedAt = task.CompletedAt,
         ExpectedDurationHours = task.ExpectedDurationHours,
-        IsAnomalous = task.IsAnomalous
+        IsAnomalous = task.IsAnomalous,
+        IsSystemGenerated = task.IsSystemGenerated,
+        RelatedInventoryItemId = task.RelatedInventoryItemId
     };
 }

@@ -122,16 +122,16 @@ export class Navbar implements OnInit {
   loadNotifications() {
     this.notificationService.getNotifications().subscribe({
       next: (data) => {
-        // Mark ones as read based on localStorage
-        const unreadList = data.filter(n => !this.readNotificationIds.has(n.id));
-        let formattedData = data.map(n => ({
+        // Backend now sends proper UTC ISO strings (with Z suffix), no need to patch
+        const formattedData = data.map(n => ({
           ...n,
-          date: (n.date && !n.date.endsWith('Z')) ? n.date + 'Z' : n.date,
           isRead: this.readNotificationIds.has(n.id)
         }));
         formattedData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         this.notifications.set(formattedData);
-        this.unreadCount.set(unreadList.length);
+        // Unread = any notification whose ID is not in the persisted read set
+        const unreadCount = formattedData.filter(n => !n.isRead).length;
+        this.unreadCount.set(unreadCount);
       },
       error: (err) => console.error('Error loading notifications', err)
     });
@@ -149,5 +149,22 @@ export class Navbar implements OnInit {
     }
 
     this.router.navigate([notification.link]);
+  }
+
+  getRelativeTime(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHour < 24) return `${diffHour}h ago`;
+    if (diffDay === 1) return 'yesterday';
+    return `${diffDay}d ago`;
   }
 }

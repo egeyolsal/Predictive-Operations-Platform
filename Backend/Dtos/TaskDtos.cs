@@ -62,6 +62,8 @@ public class TaskResponseDto
     public DateTime? CompletedAt { get; set; }
     public double ExpectedDurationHours { get; set; }
     public bool IsAnomalous { get; set; }
+    public bool IsSystemGenerated { get; set; }
+    public int? RelatedInventoryItemId { get; set; }
 }
 
 public class TaskMaterialConsumptionDto

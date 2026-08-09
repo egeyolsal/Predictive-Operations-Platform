@@ -93,9 +93,25 @@ public class StockPredictionService : IStockPredictionService
         
         if (prediction.IsCritical && item.CurrentStock > 0)
         {
+            // IDEMPOTENCY: Only create a new alert if there is no active (non-Done) system-generated task for this item
+            var existingAlerts = await _unitOfWork.TaskItems.FindAsync(
+                t => t.IsSystemGenerated && t.RelatedInventoryItemId == item.Id && t.Status != TaskItemStatus.Done);
+            if (existingAlerts.Any())
+            {
+                return; // Alert already exists, skip to prevent duplicates
+            }
+
             var adminUsers = await _unitOfWork.Users.FindAsync(u => u.Role == UserRole.Admin);
             var adminUser = adminUsers.FirstOrDefault();
             int alertAssignedUserId = adminUser?.Id ?? assignedUserId;
+
+            // DYNAMIC CATEGORY: Use the inventory item's own category; fall back to first available category
+            int categoryId = item.CategoryId;
+            if (categoryId <= 0)
+            {
+                var allCategories = await _unitOfWork.Categories.GetAllAsync();
+                categoryId = allCategories.FirstOrDefault()?.Id ?? 1;
+            }
 
             var itemSuppliers = await _unitOfWork.ItemSuppliers.FindAsync(isup => isup.InventoryItemId == item.Id);
             var optimumItemSupplier = itemSuppliers.OrderBy(isup => isup.Price).FirstOrDefault();
@@ -123,14 +139,16 @@ public class StockPredictionService : IStockPredictionService
                 Status = TaskItemStatus.ToDo,
                 Priority = TaskPriority.High,
                 AssignedUserId = alertAssignedUserId,
-                CategoryId = 1, // Fallback CategoryId if task.CategoryId is not passed properly
+                CategoryId = categoryId,
                 ExpectedDurationHours = 1,
-                IsAnomalous = true,
+                IsAnomalous = false,         // NOT a z-score anomaly
+                IsSystemGenerated = true,    // Marks this as an auto-generated system alert
+                RelatedInventoryItemId = item.Id,  // For idempotency lookups
                 CreatedAt = DateTime.UtcNow
             };
             
             await _unitOfWork.TaskItems.AddAsync(reorderTask);
-            await _unitOfWork.SaveChangesAsync(); // We save immediately to ensure the task is created
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

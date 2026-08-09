@@ -51,7 +51,7 @@ public class NotificationsController : ControllerBase
                 Type = "task",
                 Message = $"New task assigned: {t.Title}",
                 Link = "/tasks",
-                Date = t.CreatedAt
+                Date = t.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss'Z'")
             });
         }
 
@@ -60,6 +60,7 @@ public class NotificationsController : ControllerBase
             // Low stock alerts
             var lowStockItems = await _context.InventoryItems
                 .AsNoTracking()
+                .Include(i => i.Transactions)
                 .Where(i => i.CurrentStock < i.CriticalThreshold)
                 .OrderBy(i => i.CurrentStock)
                 .Take(5)
@@ -67,13 +68,14 @@ public class NotificationsController : ControllerBase
 
             foreach (var i in lowStockItems)
             {
+                var lastTransactionDate = i.Transactions.OrderByDescending(t => t.TransactionDate).FirstOrDefault()?.TransactionDate ?? now;
                 notifications.Add(new NotificationDto
                 {
                     Id = $"inv_low_{i.Id}",
                     Type = "inventory",
                     Message = $"Low stock alert: {i.Name} ({i.CurrentStock}/{i.CriticalThreshold})",
                     Link = "/inventory",
-                    Date = now // Ongoing issue
+                    Date = lastTransactionDate.ToString("yyyy-MM-ddTHH:mm:ss'Z'")
                 });
             }
 
@@ -94,7 +96,7 @@ public class NotificationsController : ControllerBase
                     Type = "task",
                     Message = $"Task completed by {t.AssignedUser?.Username}: {t.Title}",
                     Link = "/tasks",
-                    Date = t.CompletedAt ?? now
+                    Date = (t.CompletedAt ?? now).ToString("yyyy-MM-ddTHH:mm:ss'Z'")
                 });
             }
             

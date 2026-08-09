@@ -170,7 +170,8 @@ export class TasksForm implements OnInit {
 
   isCriticalStockTask(): boolean {
     const item = this.editingItem();
-    return !!item && !!item.title && item.title.includes('Kritik Stok Uyarısı');
+    // Uses isSystemGenerated flag instead of brittle string matching
+    return !!item && item.isSystemGenerated === true;
   }
 
   getSupplierEmail(): string {
@@ -183,8 +184,8 @@ export class TasksForm implements OnInit {
   getSupplierMailtoLink(): string {
     const email = this.getSupplierEmail();
     const item = this.editingItem();
-    const subject = encodeURIComponent('Acil Sipariş Talebi - Kritik Stok');
-    const body = encodeURIComponent(`Merhaba,\n\nSistemimiz tarafından otomatik oluşturulan kritik stok uyarısı sebebiyle acil sipariş geçmek istiyoruz.\n\nGörev: ${item?.title}\n\nİyi çalışmalar.`);
+    const subject = encodeURIComponent('Urgent Stock Reorder Request - Critical Stock Alert');
+    const body = encodeURIComponent(`Hello,\n\nOur inventory management system has automatically detected a critical stock level for the following item and we would like to place an urgent order.\n\nTask Reference: ${item?.title}\n\nPlease confirm availability and provide the earliest possible delivery date.\n\nBest regards.`);
     return `mailto:${email}?subject=${subject}&body=${body}`;
   }
 

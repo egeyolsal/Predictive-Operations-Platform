@@ -6,5 +6,5 @@ public class NotificationDto
     public string Type { get; set; } = string.Empty; // "task", "inventory", etc.
     public string Message { get; set; } = string.Empty;
     public string Link { get; set; } = string.Empty;
-    public DateTime Date { get; set; }
+    public string Date { get; set; } = string.Empty; // ISO 8601 UTC string, e.g. "2026-08-09T14:47:00Z"
 }

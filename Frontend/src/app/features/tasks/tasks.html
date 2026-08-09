@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
 <div class="flex justify-content-between align-items-center mb-5">
   <div>
@@ -50,8 +51,11 @@
     <tr [ngClass]="{'bg-red-50 border-left-3 border-red-500': showAnomalyWarning(item)}">
       <td>
         <div class="flex align-items-center">
-          @if (showAnomalyWarning(item)) {
-            <i class="pi pi-sparkles text-red-500 mr-2 text-xl" style="animation: pulse 2s infinite;" pTooltip="AI Anomaly / Critical Stock"></i>
+          @if (isAnomalousTask(item) && !isSystemAlert(item)) {
+            <i class="pi pi-chart-line text-orange-500 mr-2 text-xl" style="animation: pulse 2s infinite;" [pTooltip]="getAnomalyTooltip(item)"></i>
+          }
+          @if (isSystemAlert(item)) {
+            <i class="pi pi-exclamation-triangle text-red-500 mr-2 text-xl" style="animation: pulse 2s infinite;" [pTooltip]="getAnomalyTooltip(item)"></i>
           }
           <span [class.font-bold]="showAnomalyWarning(item)" [class.text-red-700]="showAnomalyWarning(item)">{{ item.title }}</span>
         </div>
