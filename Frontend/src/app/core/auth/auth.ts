@@ -8,6 +8,7 @@ const TOKEN_KEY = 'auth_token';
 const USERNAME_KEY = 'auth_username';
 const ROLE_KEY = 'auth_role';
 const PIC_KEY = 'auth_pic';
+const ID_KEY = 'auth_id';
 
 @Injectable({ providedIn: 'root' })
 export class Auth {
@@ -16,6 +17,7 @@ export class Auth {
   readonly isAuthenticated = signal<boolean>(!!localStorage.getItem(TOKEN_KEY));
   readonly username = signal<string | null>(localStorage.getItem(USERNAME_KEY));
   readonly role = signal<string | null>(localStorage.getItem(ROLE_KEY));
+  readonly id = signal<number | null>(localStorage.getItem(ID_KEY) ? parseInt(localStorage.getItem(ID_KEY)!, 10) : null);
   readonly profilePictureUrl = signal<string | null>(localStorage.getItem(PIC_KEY));
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
@@ -43,9 +45,11 @@ export class Auth {
     localStorage.removeItem(USERNAME_KEY);
     localStorage.removeItem(ROLE_KEY);
     localStorage.removeItem(PIC_KEY);
+    localStorage.removeItem(ID_KEY);
     this.isAuthenticated.set(false);
     this.username.set(null);
     this.role.set(null);
+    this.id.set(null);
     this.profilePictureUrl.set(null);
   }
 
@@ -57,6 +61,7 @@ export class Auth {
     localStorage.setItem(TOKEN_KEY, response.token);
     localStorage.setItem(USERNAME_KEY, response.username);
     localStorage.setItem(ROLE_KEY, response.role);
+    localStorage.setItem(ID_KEY, response.id.toString());
     if (response.profilePictureUrl) {
       localStorage.setItem(PIC_KEY, response.profilePictureUrl);
       this.profilePictureUrl.set(response.profilePictureUrl);
@@ -67,6 +72,7 @@ export class Auth {
     this.isAuthenticated.set(true);
     this.username.set(response.username);
     this.role.set(response.role);
+    this.id.set(response.id);
   }
   
   updateProfilePicture(url: string | null): void {

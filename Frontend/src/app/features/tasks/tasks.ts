@@ -31,6 +31,7 @@ export class Tasks implements OnInit {
 
   readonly isAdmin = computed(() => this.auth.role() === 'Admin');
   readonly isAnalyst = computed(() => this.auth.role() === 'Analyst');
+  readonly currentUserId = computed(() => this.auth.id());
 
   readonly items = signal<TaskItem[]>([]);
   readonly isLoading = signal(true);
@@ -166,6 +167,26 @@ export class Tasks implements OnInit {
           },
         });
       }
+    });
+  }
+
+  onStartTask(item: TaskItem): void {
+    this.tasksApi.updateStatus(item.id, TaskItemStatus.InProgress).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Started',
+          detail: 'Task marked as In Progress.',
+        });
+        this.loadItems();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to start task.',
+        });
+      },
     });
   }
 

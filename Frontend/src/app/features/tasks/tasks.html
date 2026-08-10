@@ -88,6 +88,16 @@
       <td>
         <div class="action-buttons">
           @if (isAdmin()) {
+            @if (item.status === TaskItemStatus.ToDo) {
+              <p-button
+                icon="pi pi-play"
+                severity="info"
+                [text]="true"
+                [rounded]="true"
+                (click)="onStartTask(item)"
+                pTooltip="Start Task"
+              ></p-button>
+            }
             @if (item.status !== TaskItemStatus.Done) {
               <p-button
                 icon="pi pi-check"
@@ -114,7 +124,17 @@
               (click)="onDelete(item)"
               pTooltip="Delete Task"
             ></p-button>
-          } @else {
+          } @else if (item.assignedUserId === currentUserId()) {
+            @if (item.status === TaskItemStatus.ToDo) {
+              <p-button
+                icon="pi pi-play"
+                severity="info"
+                [text]="true"
+                [rounded]="true"
+                (click)="onStartTask(item)"
+                pTooltip="Start Task"
+              ></p-button>
+            }
             @if (item.status !== TaskItemStatus.Done) {
               <p-button
                 icon="pi pi-check"
