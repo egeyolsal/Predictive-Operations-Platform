@@ -160,7 +160,9 @@ public class TaskController : ControllerBase
         {
             existingTask.Status = dto.Status;
             existingTask.CompletedAt ??= DateTime.UtcNow;
-            existingTask.IsAnomalous = await _anomalyService.EvaluateTaskAnomalyAsync(existingTask);
+            existingTask.IsAnomalous = existingTask.IsSystemGenerated 
+                ? false 
+                : await _anomalyService.EvaluateTaskAnomalyAsync(existingTask);
         }
         else
         {

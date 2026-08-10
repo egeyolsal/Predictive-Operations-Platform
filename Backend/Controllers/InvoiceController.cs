@@ -133,6 +133,20 @@ public class InvoiceController : ControllerBase
             if (dto.Type == InvoiceType.Inbound)
             {
                 inventoryItem.CurrentStock += lineItemDto.Quantity;
+
+                // Auto-close open system alerts ONLY IF the stock is now safely above the critical threshold
+                if (inventoryItem.CurrentStock >= inventoryItem.CriticalThreshold)
+                {
+                    var openAlerts = await _unitOfWork.TaskItems.FindAsync(
+                        t => t.IsSystemGenerated && t.RelatedInventoryItemId == inventoryItem.Id && t.Status != TaskItemStatus.Done);
+                    
+                    foreach (var alert in openAlerts)
+                    {
+                        alert.Status = TaskItemStatus.Done;
+                        alert.CompletedAt = DateTime.UtcNow;
+                        _unitOfWork.TaskItems.Update(alert);
+                    }
+                }
             }
             else // Outbound or InternalConsumption
             {

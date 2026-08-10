@@ -28,7 +28,8 @@ public class TaskAnomalyService : ITaskAnomalyService
         var allPastTasks = await _unitOfWork.TaskItems.FindAsync(t => 
             t.CategoryId == currentTask.CategoryId &&
             t.Status == TaskItemStatus.Done && 
-            t.CompletedAt != null);
+            t.CompletedAt != null &&
+            !t.IsSystemGenerated);
 
         // 3. Leave-one-out masking (exclude the current task)
         var pastTasks = allPastTasks.Where(t => t.Id != currentTask.Id).ToList();
