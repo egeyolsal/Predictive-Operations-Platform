@@ -270,6 +270,19 @@ public class InvoiceController : ControllerBase
         _unitOfWork.Invoices.Update(invoice);
         await _unitOfWork.SaveChangesAsync();
 
+        // After saving, re-evaluate alerts if stock was decreased (which happens when Inbound is cancelled)
+        if (invoice.Type == InvoiceType.Inbound)
+        {
+            foreach (var lineItem in lineItems)
+            {
+                var inventoryItem = await _unitOfWork.InventoryItems.GetByIdAsync(lineItem.InventoryItemId);
+                if (inventoryItem != null)
+                {
+                    await _stockPredictionService.EvaluateStockAndCreateAlertsAsync(inventoryItem, 0, 1);
+                }
+            }
+        }
+
         return Ok(new { message = "Invoice successfully cancelled and stock reverted." });
     }
 
