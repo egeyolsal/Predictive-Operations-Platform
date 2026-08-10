@@ -1,26 +1,15 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="flex justify-content-between align-items-center mb-5">
+<div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3 mb-5">
   <div>
-    <h1 class="m-0 text-3xl font-semibold text-color">Tasks</h1>
-    <p class="text-color-secondary mt-1">Track and manage your workforce operations.</p>
+    <h1 class="m-0 text-3xl font-semibold text-color">Tasks Management</h1>
+    <p class="text-color-secondary mt-1">Track and manage maintenance and regular tasks.</p>
   </div>
-  <div class="flex align-items-center gap-3">
-    <input
-      pInputText
-      type="text"
-      placeholder="Search by Title..."
-      [value]="searchTerm()"
-      (input)="onSearchInput($event)"
-      class="w-15rem"
-    />
+  <div class="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3">
+    <input pInputText type="text" placeholder="Search tasks..." [value]="searchTerm()" (input)="onSearchInput($event)" class="w-full sm:w-15rem flex-grow-1 sm:flex-grow-0" />
     @if (isAdmin()) {
-      <p-button
-        label="Add Task"
-        icon="pi pi-plus"
-        (click)="openAddDialog()"
-      ></p-button>
+      <p-button label="Add Task" icon="pi pi-plus" (onClick)="openAddDialog()" class="flex-shrink-0" styleClass="white-space-nowrap"></p-button>
     }
   </div>
 </div>
@@ -30,6 +19,7 @@
   [loading]="isLoading()"
   [paginator]="true"
   [rows]="10"
+  [scrollable]="true"
 >
   <ng-template pTemplate="header">
     <tr>

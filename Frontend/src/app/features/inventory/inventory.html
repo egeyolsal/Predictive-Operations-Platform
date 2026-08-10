@@ -1,19 +1,12 @@
-<div class="flex justify-content-between align-items-center mb-5">
+<div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3 mb-5">
   <div>
     <h1 class="m-0 text-3xl font-semibold text-color">Inventory</h1>
     <p class="text-color-secondary mt-1">Manage your warehouse stock and materials.</p>
   </div>
-  <div class="flex align-items-center gap-3">
-    <input
-      pInputText
-      type="text"
-      placeholder="Search..."
-      [value]="searchTerm()"
-      (input)="onSearchInput($event)"
-      class="w-15rem"
-    />
+  <div class="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3">
+    <input pInputText type="text" placeholder="Search materials..." [value]="searchTerm()" (input)="onSearchInput($event)" class="w-full sm:w-15rem flex-grow-1 sm:flex-grow-0" />
     @if (isAdmin()) {
-      <p-button label="Add Inventory" icon="pi pi-plus" (onClick)="openAddDialog()" />
+      <p-button label="Add Inventory" icon="pi pi-plus" (onClick)="openAddDialog()" class="flex-shrink-0" styleClass="white-space-nowrap"></p-button>
     }
   </div>
 </div>
@@ -25,6 +18,11 @@
   [loading]="isLoading()"
   [paginator]="true"
   [rows]="10"
+  [showCurrentPageReport]="true"
+  responsiveLayout="scroll"
+  [scrollable]="true"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
+  [rowsPerPageOptions]="[10, 25, 50]"
 >
   <ng-template pTemplate="header">
     <tr>

@@ -1,35 +1,48 @@
 .invoices-page {
   .invoice-form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     margin-bottom: 2rem;
-    padding: 2rem;
+    padding: 1rem;
     background: var(--surface-ground);
     border: 1px solid var(--surface-border);
     border-radius: var(--border-radius);
+
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+    }
   }
 
   .line-item-row {
-    display: grid;
-    grid-template-columns: 3fr 1fr 1.5fr auto;
-    gap: 1.5rem;
-    align-items: flex-end;
-    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
     margin-bottom: 1rem;
     background: var(--surface-ground);
     border: 1px solid var(--surface-border);
     border-radius: var(--border-radius);
-  }
 
-  @media (max-width: 768px) {
-    .line-item-row {
-      grid-template-columns: 1fr;
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1.5fr auto;
+      gap: 1.5rem;
+      align-items: flex-end;
+      padding: 1.5rem;
     }
   }
 
   .field {
     margin-bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   label {
@@ -41,6 +54,20 @@
 
   .full-width {
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+
+    /* Enforce strict constraints on PrimeNG internal elements to prevent them from breaking the grid/flex boundaries */
+    ::ng-deep .p-dropdown,
+    ::ng-deep .p-inputnumber,
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-inputnumber-input {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
   }
 
 

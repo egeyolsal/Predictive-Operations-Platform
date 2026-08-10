@@ -2,7 +2,7 @@
   [visible]="visible()"
   (visibleChange)="onHide()"
   [modal]="true"
-  [style]="{ width: '700px' }"
+  [style]="{ width: '90vw', maxWidth: '700px' }"
   [header]="editingItem() ? 'Edit Inventory Item' : 'Add Inventory Item'"
 >
 <p-tabs value="0">
@@ -92,7 +92,7 @@
         </form>
       </div>
 
-      <p-table [value]="itemSuppliers()" [loading]="isSuppliersLoading()" styleClass="p-datatable-sm">
+      <p-table [value]="itemSuppliers()" [loading]="isSuppliersLoading()" styleClass="p-datatable-sm" [scrollable]="true">
         <ng-template pTemplate="header">
           <tr>
             <th>Supplier</th>

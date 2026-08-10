@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { Component, inject, OnInit, signal, DestroyRef, output } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, interval } from 'rxjs';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -29,6 +29,7 @@ export class Navbar implements OnInit {
   menuItems: MenuItem[] | undefined;
   pageTitle = signal('');
   isDashboard = signal(true);
+  readonly toggleSidebar = output<void>();
   
   notifications = signal<NotificationDto[]>([]);
   unreadCount = signal(0);

@@ -1,18 +1,12 @@
 <div class="invoices-page p-4">
-  <div class="flex justify-content-between align-items-center mb-5">
+  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3 mb-5">
     <div>
       <h1 class="m-0 text-3xl font-semibold text-color">Invoices</h1>
-      <p class="text-color-secondary mt-1">Manage purchase and sales invoices.</p>
+      <p class="text-color-secondary mt-1">Manage your financial records and transactions.</p>
     </div>
-    <div class="flex align-items-center gap-3">
-      <input
-        pInputText
-        type="text"
-        placeholder="Search invoices..."
-        [value]="searchTerm()"
-        (input)="onSearchInput($event)"
-        class="w-15rem"
-      />
+    
+    <div class="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3">
+      <input pInputText type="text" [value]="searchTerm()" (input)="onSearchInput($event)" placeholder="Search invoices..." class="w-full sm:w-20rem flex-grow-1 sm:flex-grow-0" />
     </div>
   </div>
 
@@ -30,7 +24,7 @@
       <!-- History Tab -->
       <p-tabpanel value="0">
         <div class="surface-card p-4 shadow-2 border-round">
-          <p-table [value]="filteredInvoices()" [loading]="isLoading()" [paginator]="true" [rows]="10">
+          <p-table [value]="filteredInvoices()" [loading]="isLoading()" [paginator]="true" [rows]="10" responsiveLayout="scroll" [scrollable]="true">
 
         <ng-template pTemplate="header">
               <tr>
@@ -62,14 +56,15 @@
                   {{ inv.type === 'Inbound' ? inv.supplierName : inv.customerName || '-' }}
                 </td>
                 <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">{{ inv.totalAmount | currency }}</td>
-                <td style="text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
-                  <p-button icon="pi pi-eye" 
-                            severity="info" 
-                            [text]="true" 
-                            [rounded]="true" 
-                            title="View Details"
-                            (onClick)="showDetails(inv)">
-                  </p-button>
+                <td style="text-align: center;">
+                  <div class="flex justify-content-center align-items-center gap-2">
+                    <p-button icon="pi pi-eye" 
+                              severity="info" 
+                              [text]="true" 
+                              [rounded]="true" 
+                              title="View Details"
+                              (onClick)="showDetails(inv)">
+                    </p-button>
                   <p-button icon="pi pi-file-pdf" 
                             severity="danger" 
                             [text]="true" 
@@ -88,6 +83,7 @@
                               (onClick)="confirmCancel(inv)">
                     </p-button>
                   }
+                  </div>
                 </td>
               </tr>
             </ng-template>
@@ -188,7 +184,7 @@
     </p-tabpanels>
   </p-tabs>
 
-  <p-dialog [visible]="detailsDialogVisible()" (visibleChange)="detailsDialogVisible.set($event)" [modal]="true" [header]="'Invoice Details: ' + (selectedInvoice()?.invoiceNumber || '')" [style]="{width: '800px'}" [maximizable]="true">
+  <p-dialog [visible]="detailsDialogVisible()" (visibleChange)="detailsDialogVisible.set($event)" [modal]="true" [header]="'Invoice Details: ' + (selectedInvoice()?.invoiceNumber || '')" [style]="{width: '90vw', maxWidth: '800px'}" [maximizable]="true">
     @if (selectedInvoice(); as invoice) {
       <div class="flex flex-column gap-2 mb-4 p-3 surface-50 border-round">
         <div><strong>Date:</strong> {{ invoice.invoiceDate | date:'medium' }}</div>
@@ -206,7 +202,7 @@
         <div><strong>Total Amount:</strong> <span class="text-xl font-bold text-primary ml-2">{{ invoice.totalAmount | currency }}</span></div>
       </div>
 
-      <p-table [value]="invoice.lineItems" styleClass="p-datatable-sm shadow-1">
+      <p-table [value]="invoice.lineItems" styleClass="p-datatable-sm shadow-1" [scrollable]="true">
         <ng-template pTemplate="header">
           <tr>
             <th>Product Name</th>

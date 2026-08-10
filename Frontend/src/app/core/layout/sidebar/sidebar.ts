@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, Input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../auth/auth';
@@ -18,6 +18,8 @@ export class Sidebar {
   readonly username = computed(() => this.auth.username());
 
   readonly isCollapsed = signal(false);
+  
+  @Input() isOpen = false;
 
   toggleSidebar(): void {
     this.isCollapsed.update(v => !v);

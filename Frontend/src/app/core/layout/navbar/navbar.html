@@ -1,4 +1,8 @@
 <div class="topbar">
+  <button class="mobile-menu-btn" (click)="toggleSidebar.emit()" title="Menu">
+    <i class="pi pi-bars"></i>
+  </button>
+  
   <div class="welcome-section">
     @if (isDashboard()) {
       <h2>Welcome back, <span class="text-primary">{{ auth.username() }}</span></h2>
@@ -23,7 +27,7 @@
       <div class="p-3">
         <h3 class="m-0 mb-3 text-lg font-semibold text-800">Notifications</h3>
         @if (notifications().length > 0) {
-          <div class="flex flex-column gap-2">
+          <div class="flex flex-column gap-2 notification-list-container">
             @for (notif of notifications(); track notif) {
               <div class="notification-item cursor-pointer p-2 border-round hover:surface-hover transition-colors transition-duration-200" 
                    [ngClass]="{'opacity-60 surface-ground': notif.isRead}"

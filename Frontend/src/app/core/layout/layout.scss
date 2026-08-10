@@ -25,4 +25,23 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-width: 0;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+.layout-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 }

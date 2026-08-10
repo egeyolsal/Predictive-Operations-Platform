@@ -2,7 +2,7 @@
   [visible]="visible()"
   (visibleChange)="onHide()"
   [modal]="true"
-  [style]="{ width: '450px' }"
+  [style]="{ width: '90vw', maxWidth: '450px' }"
   [header]="editingItem() ? 'Edit Category' : 'Add Category'"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()">

@@ -1,17 +1,13 @@
 <div class="page-container">
-  <div class="flex justify-content-between align-items-center mb-5">
+  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3 mb-5">
     <div>
       <h1 class="m-0 text-3xl font-semibold text-color">Categories</h1>
-      <p class="text-color-secondary mt-1">Manage item and task categories</p>
+      <p class="text-color-secondary mt-1">Manage product categories for inventory.</p>
     </div>
-    <div class="flex align-items-center gap-3">
-      <input pInputText type="text" placeholder="Search categories..." (input)="onSearchInput($event)" class="w-15rem" />
+    <div class="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3">
+      <input pInputText type="text" placeholder="Search categories..." [value]="searchTerm()" (input)="onSearchInput($event)" class="w-full sm:w-15rem flex-grow-1 sm:flex-grow-0" />
       @if (isAdmin()) {
-        <p-button 
-          label="Add Category" 
-          icon="pi pi-plus" 
-          (onClick)="openAddDialog()">
-        </p-button>
+        <p-button label="Add Category" icon="pi pi-plus" (onClick)="openAddDialog()" class="flex-shrink-0" styleClass="white-space-nowrap"></p-button>
       }
     </div>
   </div>
@@ -23,6 +19,7 @@
     [rows]="10"
     [rowsPerPageOptions]="[10, 25, 50]"
     responsiveLayout="scroll"
+    [scrollable]="true"
   >
       <ng-template pTemplate="header">
         <tr>

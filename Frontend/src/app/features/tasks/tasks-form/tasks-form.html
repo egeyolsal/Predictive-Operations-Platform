@@ -3,7 +3,7 @@
   (visibleChange)="onHide()"
   [modal]="true"
   [header]="editingItem() ? 'Edit Task' : 'Add Task'"
-  [style]="{ width: '700px' }"
+  [style]="{ width: '90vw', maxWidth: '700px' }"
   [closable]="true"
   [closeOnEscape]="true"
 >
@@ -154,7 +154,7 @@
         </form>
       </div>
 
-      <p-table [value]="taskMaterials()" [loading]="isMaterialsLoading()" styleClass="p-datatable-sm">
+      <p-table [value]="taskMaterials()" [loading]="isMaterialsLoading()" styleClass="p-datatable-sm" [scrollable]="true">
         <ng-template pTemplate="header">
           <tr>
             <th>Material Name</th>
