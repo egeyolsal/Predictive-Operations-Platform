@@ -95,6 +95,11 @@ export class InvoicesComponent implements OnInit {
     return this.form.get('lineItems') as FormArray;
   }
 
+  get formTotalAmount(): number {
+    const items = this.form.getRawValue().lineItems || [];
+    return items.reduce((sum: number, item: any) => sum + ((item.quantity || 0) * (item.unitPrice || 0)), 0);
+  }
+
   ngOnInit(): void {
     this.loadData();
     this.addLineItem(); // Start with one empty line item
