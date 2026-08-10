@@ -29,6 +29,18 @@ public class ApplicationDbContext : DbContext
             .HasIndex(u => u.Username)
             .IsUnique();
 
+        modelBuilder.Entity<Category>()
+            .HasIndex(c => c.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<InventoryItem>()
+            .HasIndex(i => i.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<InventoryItem>()
+            .HasIndex(i => i.Barcode)
+            .IsUnique();
+
         modelBuilder.Entity<TaskItem>()
             .HasOne(t => t.AssignedUser)
             .WithMany(u => u.AssignedTasks)

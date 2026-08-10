@@ -159,8 +159,10 @@ export class InventoryForm {
         this.visibleChange.emit(false);
         this.saved.emit();
       },
-      error: () => {
+      error: (err: any) => {
         this.isSubmitting.set(false);
+        const errorMessage = err?.error?.message || 'Operation failed';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMessage });
       },
     });
   }

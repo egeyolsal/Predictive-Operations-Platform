@@ -55,7 +55,7 @@
                     {{ inv.type }}
                   </span>
                   @if (inv.isCancelled) {
-                    <span class="p-badge p-badge-danger ml-2">Cancelled</span>
+                    <span class="text-red-500 font-bold ml-2">CANCELLED</span>
                   }
                 </td>
                 <td [style.text-decoration]="inv.isCancelled ? 'line-through' : 'none'">

@@ -74,6 +74,14 @@ public class InventoryController : ControllerBase
         if (categoryExists == null)
             return BadRequest($"Category with id {dto.CategoryId} does not exist.");
 
+        var duplicateName = await _unitOfWork.InventoryItems.FindAsync(i => i.Name.ToLower() == dto.Name.ToLower());
+        if (duplicateName.Any())
+            return BadRequest(new { message = $"An inventory item with the name '{dto.Name}' already exists." });
+            
+        var duplicateBarcode = await _unitOfWork.InventoryItems.FindAsync(i => i.Barcode == dto.Barcode);
+        if (duplicateBarcode.Any())
+            return BadRequest(new { message = $"An inventory item with the barcode '{dto.Barcode}' already exists." });
+
         var item = new InventoryItem
         {
             Name = dto.Name,
@@ -100,6 +108,14 @@ public class InventoryController : ControllerBase
         var categoryExists = await _unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
         if (categoryExists == null)
             return BadRequest($"Category with id {dto.CategoryId} does not exist.");
+
+        var duplicateName = await _unitOfWork.InventoryItems.FindAsync(i => i.Name.ToLower() == dto.Name.ToLower() && i.Id != id);
+        if (duplicateName.Any())
+            return BadRequest(new { message = $"An inventory item with the name '{dto.Name}' already exists." });
+            
+        var duplicateBarcode = await _unitOfWork.InventoryItems.FindAsync(i => i.Barcode == dto.Barcode && i.Id != id);
+        if (duplicateBarcode.Any())
+            return BadRequest(new { message = $"An inventory item with the barcode '{dto.Barcode}' already exists." });
 
         existingItem.Name = dto.Name;
         existingItem.CategoryId = dto.CategoryId;

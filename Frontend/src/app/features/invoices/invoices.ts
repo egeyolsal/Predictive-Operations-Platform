@@ -211,6 +211,7 @@ export class InvoicesComponent implements OnInit {
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fill all required fields correctly. Ensure Unit Price is greater than 0.' });
       return;
     }
 

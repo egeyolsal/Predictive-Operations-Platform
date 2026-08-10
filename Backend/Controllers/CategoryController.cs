@@ -35,6 +35,12 @@ public class CategoryController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CategoryResponseDto>> Create(CategoryCreateDto dto)
     {
+        var existingCategory = await _unitOfWork.Categories.FindAsync(c => c.Name.ToLower() == dto.Name.ToLower());
+        if (existingCategory.Any())
+        {
+            return BadRequest(new { message = $"A category with the name '{dto.Name}' already exists." });
+        }
+
         var category = new Category
         {
             Name = dto.Name,
@@ -59,6 +65,12 @@ public class CategoryController : ControllerBase
         var existing = await _unitOfWork.Categories.GetByIdAsync(id);
         if (existing == null)
             return NotFound();
+
+        var duplicateCategory = await _unitOfWork.Categories.FindAsync(c => c.Name.ToLower() == dto.Name.ToLower() && c.Id != id);
+        if (duplicateCategory.Any())
+        {
+            return BadRequest(new { message = $"A category with the name '{dto.Name}' already exists." });
+        }
 
         existing.Name = dto.Name;
         existing.Description = dto.Description;
